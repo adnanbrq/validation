@@ -12,6 +12,7 @@ func TestValid(t *testing.T) {
 		NullableWithSkip interface{} `valid:"nullable|string"`
 		String           interface{} `valid:"string"`
 		WithOptions      interface{} `valid:"string|between:1,4"`
+		Required         interface{} `valid:"required|string"`
 	}
 
 	type AllRules struct {
@@ -29,12 +30,14 @@ func TestValid(t *testing.T) {
 		RegEx           string `valid:"regex:^[0-9]+$"`
 		RegExWithExpose string `valid:"regex:^[0-9]+$;expose"`
 		Default         bool
+		Required        string `valid:"required"`
 	}
 
 	valid := PartialRules{
 		String:           "foo",
 		WithOptions:      "foo",
 		NullableWithSkip: "",
+		Required:         "Given",
 	}
 
 	invalid := PartialRules{
@@ -58,6 +61,7 @@ func TestValid(t *testing.T) {
 		RegEx:           "123",
 		RegExWithExpose: "123",
 		Default:         true,
+		Required:        "Test",
 	}
 
 	assert.Empty(t, Validate(valid))
@@ -67,5 +71,6 @@ func TestValid(t *testing.T) {
 		"string":           {"is not a string"},
 		"withoptions":      {"must be between 1 and 4"},
 		"nullablewithskip": {"is not a string"},
+		"required":         {"is required"},
 	}, Validate(invalid))
 }

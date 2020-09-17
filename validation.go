@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/adnanbrq/validation/helper"
+	"github.com/adnanbrq/validation/rules"
 )
 
 // Validate given input and return a map of errors if any
@@ -17,10 +18,19 @@ func Validate(input interface{}) map[string][]string {
 		fieldValue := value.Field(i).Interface()
 		fieldTag := value.Type().Field(i).Tag.Get(tag)
 		fieldRules := strings.Split(fieldTag, ruleDelimiter)
-		nullable := strings.Index(fieldTag, "nullable") != -1
 
-		if nullable && helper.IsNull(fieldValue) {
+		// Skip upcoming rules as they all would fail and add unnecessary errors to an optional field
+		if strings.Index(fieldTag, "nullable") != -1 && helper.IsNull(fieldValue) {
 			continue
+		}
+
+		// Skip upcoming rules as they all would fail and add unnecessary errors whereas only the message from RequiredRule
+		// fits best
+		if strings.Index(fieldTag, "required") != -1 {
+			if err := (rules.RequiredRule{}).Validate(fieldValue, nil); err != "" {
+				result[fieldName] = append(result[fieldName], err)
+				continue
+			}
 		}
 
 		for _, rawRule := range fieldRules {
