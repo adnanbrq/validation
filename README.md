@@ -7,6 +7,7 @@ I know, this is not the first package for validation but my main purpose was to 
 
 - [Installation](#installation)
 - [Usage](#usage)
+- [Rules](#rules)
 - [Dependencies](#dependencies)
 
 ## Installation
@@ -42,6 +43,23 @@ func main() {
   errors := validation.Validate(m)
 }
 ```
+
+## Rules
+| Name | Note |
+|-|-|
+| Required | Skips upcoming rules if the value is not present |
+| Nullable | Skips upcoming rules if the value is not present |
+| Between |  |
+| Bool |  |
+| Default | Runs if given rule is not found. |
+| Email | Same as RegEx |
+| JSON |  |
+| JWT |  |
+| Max |  |
+| Min |  |
+| Numeric |  |
+| RegEx | Might not work if using : in regex. (Used as delimiter in rules) |
+| String |  |
 
 ## Dependencies
 
