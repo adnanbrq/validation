@@ -2,6 +2,7 @@ package rules
 
 import (
 	"encoding/json"
+	"reflect"
 
 	"github.com/adnanbrq/validation/helper"
 )
@@ -15,13 +16,21 @@ var (
 
 // Validate checks if the given value is a valid jwt token
 func (JSONRule) Validate(value interface{}, options interface{}) string {
-	if !helper.IsString(value) {
-		return errJSON
+	if helper.IsString(value) {
+		if err := json.Unmarshal([]byte(value.(string)), &map[string]interface{}{}); err != nil {
+			return errJSON
+		}
+
+		return ""
 	}
 
-	if err := json.Unmarshal([]byte(value.(string)), &map[string]interface{}{}); err != nil {
-		return errJSON
+	if helper.IsStruct(value) {
+		return ""
 	}
 
-	return ""
+	if helper.IsMapOf(value, reflect.String, reflect.Interface) {
+		return ""
+	}
+
+	return errJSON
 }

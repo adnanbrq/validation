@@ -16,6 +16,9 @@ func TestJSON(t *testing.T) {
 	assert.Equal(t, "", Validate("{\"foo\": {}}", nil))
 	assert.Equal(t, "", Validate("{\"foo\": {\"foo\": \"bar\"}}", nil))
 	assert.Equal(t, "", Validate("{}", nil))
+	assert.Equal(t, "", Validate(struct{}{}, nil))
+	assert.Equal(t, "", Validate(struct{ Field string }{Field: "Hello"}, nil))
+	assert.Equal(t, "", Validate(map[string]interface{}{}, nil))
 
 	// Invalid
 	assert.Equal(t, "is not a valid JSON object", Validate("", nil))

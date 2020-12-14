@@ -33,6 +33,15 @@ func TestValid(t *testing.T) {
 		Required        string `valid:"required"`
 	}
 
+	type InnerComplex struct {
+		Test interface{} `valid:"required|string"`
+	}
+
+	type ComplexStruct struct {
+		FieldA      interface{} `valid:"required|string"`
+		InnerStruct interface{} `valid:"required|json"`
+	}
+
 	valid := PartialRules{
 		String:           "foo",
 		WithOptions:      "foo",
@@ -64,6 +73,22 @@ func TestValid(t *testing.T) {
 		Required:        "Test",
 	}
 
+	complexValid := ComplexStruct{
+		FieldA: "Hello",
+		InnerStruct: InnerComplex{
+			Test: "World",
+		},
+	}
+
+	complexInvalid := ComplexStruct{
+		FieldA: 123,
+	}
+
+	complexInvalidInner := ComplexStruct{
+		FieldA:      "Valid",
+		InnerStruct: InnerComplex{},
+	}
+
 	assert.Empty(t, Validate(valid))
 	assert.Empty(t, Validate(validAllRules))
 	assert.NotEmpty(t, Validate(invalid))
@@ -73,4 +98,12 @@ func TestValid(t *testing.T) {
 		"nullablewithskip": {"is not a string"},
 		"required":         {"is required"},
 	}, Validate(invalid))
+	assert.Empty(t, Validate(complexValid))
+	assert.Equal(t, map[string][]string{
+		"fielda":      {"is not a string"},
+		"innerstruct": {"is required"},
+	}, Validate(complexInvalid))
+	assert.Equal(t, map[string][]string{
+		"innerstruct.test": {"is required"},
+	}, Validate(complexInvalidInner))
 }

@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -11,7 +12,7 @@ import (
 // Validate given input and return a map of errors if any
 func Validate(input interface{}) map[string][]string {
 	value := reflect.ValueOf(input)
-	result := make(map[string][]string)
+	result := make(map[string][]string, 0)
 
 	for i := 0; i < value.NumField(); i++ {
 		fieldName := strings.ToLower(value.Type().Field(i).Name)
@@ -44,6 +45,17 @@ func Validate(input interface{}) map[string][]string {
 
 			if err := getRule(ruleName).Validate(fieldValue, ruleOption); len(err) != 0 {
 				result[fieldName] = append(result[fieldName], err)
+			}
+		}
+
+		if helper.IsStruct(fieldValue) {
+			internalValidationErrors := Validate(fieldValue)
+			if len(internalValidationErrors) > 0 {
+				for k := range internalValidationErrors {
+					for _, err := range internalValidationErrors[k] {
+						result[fmt.Sprintf("%s.%s", fieldName, k)] = append(result[fieldName], err)
+					}
+				}
 			}
 		}
 	}
