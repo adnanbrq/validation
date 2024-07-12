@@ -5,5 +5,5 @@ type DefaultRule struct{}
 
 // Validate returns no error
 func (DefaultRule) Validate(value interface{}, options interface{}) string {
-	return ""
+  return ""
 }

@@ -7,6 +7,10 @@ import (
 )
 
 func TestNull(t *testing.T) {
+	asPtr := func(v any) *any {
+		return &v
+	}
+
 	// Valid
 	assert.True(t, IsNull(nil))
 	assert.True(t, IsNull(""))
@@ -14,6 +18,7 @@ func TestNull(t *testing.T) {
 	assert.True(t, IsNull(make(chan int)))
 	assert.True(t, IsNull(make(map[string]interface{}, 0)))
 	assert.True(t, IsNull(struct{}{}))
+	assert.True(t, IsNull(asPtr(nil)))
 
 	// Invalid
 	c := make(chan int, 2)

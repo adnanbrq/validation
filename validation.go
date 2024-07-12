@@ -9,8 +9,11 @@ import (
 	"github.com/adnanbrq/validation/rules"
 )
 
-// Validate given input and return a map of errors if any
-func Validate(input interface{}) map[string][]string {
+type Validator struct {
+	customs map[string]Rule
+}
+
+func (v *Validator) Validate(input interface{}) map[string][]string {
 	value := reflect.ValueOf(input)
 	result := make(map[string][]string, 0)
 
@@ -21,13 +24,13 @@ func Validate(input interface{}) map[string][]string {
 		fieldRules := strings.Split(fieldTag, ruleDelimiter)
 
 		// Skip upcoming rules as they all would fail and add unnecessary errors to an optional field
-		if strings.Index(fieldTag, "nullable") != -1 && helper.IsNull(fieldValue) {
+		if strings.Contains(fieldTag, "nullable") && (fieldValue == nil || helper.IsNull(fieldValue)) {
 			continue
 		}
 
 		// Skip upcoming rules as they all would fail and add unnecessary errors whereas only the message from RequiredRule
 		// fits best
-		if strings.Index(fieldTag, "required") != -1 {
+		if strings.Contains(fieldTag, "required") {
 			if err := (rules.RequiredRule{}).Validate(fieldValue, nil); err != "" {
 				result[fieldName] = append(result[fieldName], err)
 				continue
@@ -43,13 +46,19 @@ func Validate(input interface{}) map[string][]string {
 				ruleOption = split[1]
 			}
 
-			if err := getRule(ruleName).Validate(fieldValue, ruleOption); len(err) != 0 {
+			rule, ruleExists := v.customs[ruleName]
+
+			if !ruleExists {
+				rule = getRule(ruleName)
+			}
+
+			if err := rule.Validate(fieldValue, ruleOption); len(err) != 0 {
 				result[fieldName] = append(result[fieldName], err)
 			}
 		}
 
 		if helper.IsStruct(fieldValue) {
-			internalValidationErrors := Validate(fieldValue)
+			internalValidationErrors := v.Validate(fieldValue)
 			if len(internalValidationErrors) > 0 {
 				for k := range internalValidationErrors {
 					for _, err := range internalValidationErrors[k] {
@@ -61,4 +70,16 @@ func Validate(input interface{}) map[string][]string {
 	}
 
 	return result
+}
+
+func (v *Validator) AppendRule(name string, rule Rule) *Validator {
+	v.customs[name] = rule
+
+	return v
+}
+
+func NewValidator() *Validator {
+	return &Validator{
+		customs: map[string]Rule{},
+	}
 }

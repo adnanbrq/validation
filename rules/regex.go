@@ -47,7 +47,7 @@ func (RegexRule) Validate(value interface{}, options interface{}) string {
 		return ""
 	}
 
-	if customReg.MatchString(value.(string)) == false {
+	if !customReg.MatchString(value.(string)) {
 		if expose {
 			return fmt.Sprintf(errRegexWithPattern, split[0])
 		}

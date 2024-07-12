@@ -1,10 +1,57 @@
 package validation
 
 import (
+	"regexp"
 	"testing"
 
+	"github.com/adnanbrq/validation/helper"
 	"github.com/stretchr/testify/assert"
 )
+
+type SnakeCaseRule struct{}
+
+func (SnakeCaseRule) Validate(value interface{}, options interface{}) string {
+	if !helper.IsString(value) {
+		return "is not snake case formatted"
+	}
+
+	if regexp.MustCompile("[a-zA-Z]+(?:_[a-zA-Z]+)*").MatchString(value.(string)) {
+		return "is not snake case formatted"
+	}
+
+	return ""
+}
+
+func TestCustomRules(t *testing.T) {
+	type Input struct {
+		ProfileName any `valid:"nullable|pointer|string|SnakeCase|min:4|max:32"`
+	}
+
+	invalidSnakeCase := "Helloworld"
+	validSnakeCase := "Hello_World"
+	noString := 4
+	v := NewValidator().AppendRule("SnakeCase", SnakeCaseRule{})
+
+	assert.Equal(t, map[string][]string{}, v.Validate(Input{ProfileName: nil}))
+	assert.Equal(t, map[string][]string{
+		"profilename": {"is not a pointer", "is not a string", "is not snake case formatted"},
+	}, v.Validate(Input{ProfileName: noString}))
+	assert.Equal(t, map[string][]string{
+		"profilename": {"is not a string", "is not snake case formatted"},
+	}, v.Validate(Input{ProfileName: &noString}))
+	assert.Equal(t, map[string][]string{
+		"profilename": {"is not a pointer", "is not snake case formatted"},
+	}, v.Validate(Input{ProfileName: validSnakeCase}))
+	assert.Equal(t, map[string][]string{
+		"profilename": {"is not snake case formatted"},
+	}, v.Validate(Input{ProfileName: &validSnakeCase}))
+	assert.Equal(t, map[string][]string{
+		"profilename": {"is not a pointer", "is not snake case formatted"},
+	}, v.Validate(Input{ProfileName: invalidSnakeCase}))
+	assert.Equal(t, map[string][]string{
+		"profilename": {"is not snake case formatted"},
+	}, v.Validate(Input{ProfileName: &invalidSnakeCase}))
+}
 
 func TestValid(t *testing.T) {
 	type PartialRules struct {
@@ -89,21 +136,22 @@ func TestValid(t *testing.T) {
 		InnerStruct: InnerComplex{},
 	}
 
-	assert.Empty(t, Validate(valid))
-	assert.Empty(t, Validate(validAllRules))
-	assert.NotEmpty(t, Validate(invalid))
+	v := NewValidator()
+	assert.Empty(t, v.Validate(valid))
+	assert.Empty(t, v.Validate(validAllRules))
+	assert.NotEmpty(t, v.Validate(invalid))
 	assert.Equal(t, map[string][]string{
 		"string":           {"is not a string"},
 		"withoptions":      {"must be between 1 and 4"},
 		"nullablewithskip": {"is not a string"},
 		"required":         {"is required"},
-	}, Validate(invalid))
-	assert.Empty(t, Validate(complexValid))
+	}, v.Validate(invalid))
+	assert.Empty(t, v.Validate(complexValid))
 	assert.Equal(t, map[string][]string{
 		"fielda":      {"is not a string"},
 		"innerstruct": {"is required"},
-	}, Validate(complexInvalid))
+	}, v.Validate(complexInvalid))
 	assert.Equal(t, map[string][]string{
 		"innerstruct.test": {"is required"},
-	}, Validate(complexInvalidInner))
+	}, v.Validate(complexInvalidInner))
 }

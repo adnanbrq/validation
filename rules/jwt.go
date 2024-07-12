@@ -20,7 +20,7 @@ func (JWTRule) Validate(value interface{}, options interface{}) string {
 		return errJWT
 	}
 
-	if regJWT.MatchString(value.(string)) == false {
+	if !regJWT.MatchString(value.(string)) {
 		return errJWT
 	}
 

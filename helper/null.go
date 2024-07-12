@@ -1,28 +1,30 @@
 package helper
 
-import "reflect"
+import (
+	"reflect"
+)
 
 // IsNull checks if the given value is null
 func IsNull(value interface{}) bool {
-	valueOf := reflect.ValueOf(value)
+	v := reflect.ValueOf(value)
 
-	if value == nil {
+	if IsPointer(value) && v.Elem().IsZero() {
 		return true
 	}
 
-	if IsString(value) && len(value.(string)) == 0 {
+	if value == nil || !v.IsValid() {
 		return true
 	}
 
-	if IsArray(value) && valueOf.Len() == 0 {
+	if IsString(value) && len(v.String()) == 0 {
 		return true
 	}
 
-	if valueOf.Kind() == reflect.Map || valueOf.Kind() == reflect.Chan {
-		return valueOf.Len() == 0
+	if IsArray(value) && v.Len() == 0 {
+		return true
 	}
 
-	if valueOf.Kind() == reflect.Struct {
+	if v.Kind() == reflect.Struct {
 		return reflect.TypeOf(value).NumField() == 0
 	}
 

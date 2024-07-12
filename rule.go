@@ -1,6 +1,8 @@
 package validation
 
-import "github.com/adnanbrq/validation/rules"
+import (
+	"github.com/adnanbrq/validation/rules"
+)
 
 // Rule interface
 type Rule interface {
@@ -35,6 +37,8 @@ func getRule(name string) Rule {
 		return rules.JSONRule{}
 	case "regex":
 		return rules.RegexRule{}
+	case "pointer":
+		return rules.PointerRule{}
 	default:
 		return rules.DefaultRule{}
 	}
