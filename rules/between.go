@@ -12,31 +12,46 @@ import (
 type BetweenRule struct{}
 
 var (
-	betweenDelimiter = ","
-	errBetween       = "must be between %v and %v"
+	errBetween          = "between"
+	errBetweenUnuseable = "between-unuseable"
 )
 
+func (r BetweenRule) Name() string {
+	return "between"
+}
+
 // Validate if the value is between given values in length or value
-func (BetweenRule) Validate(value interface{}, options interface{}) string {
+func (r BetweenRule) Validate(value, options any) []string {
 	v := reflect.ValueOf(value)
 	o := reflect.ValueOf(options)
 
+	if helper.IsPointer(value) || helper.IsPointer(options) {
+		return []string{errBetweenUnuseable}
+	}
+
 	if value == nil || options == nil {
-		return ""
+		return []string{errBetweenUnuseable}
 	}
 
 	if o.Kind() != reflect.String {
-		return ""
+		return noErrs
 	}
 
-	values := strings.Split(o.String(), betweenDelimiter)
+	values := strings.Split(o.String(), ",")
 	if len(values) != 2 {
-		return ""
+		return noErrs
 	}
 
 	numeric := NumericRule{}
-	if numeric.Validate(values[0], nil) != "" || numeric.Validate(values[1], nil) != "" {
-		return ""
+	numericErrsMin := numeric.Validate(values[0], nil)
+	numericErrsMax := numeric.Validate(values[1], nil)
+
+	if len(numericErrsMin) > 0 {
+		return numericErrsMin
+	}
+
+	if len(numericErrsMax) > 0 {
+		return numericErrsMax
 	}
 
 	var (
@@ -74,11 +89,15 @@ func (BetweenRule) Validate(value interface{}, options interface{}) string {
 
 			pass = v.CanFloat() && v.Float() >= min.(float64) && v.Float() <= max.(float64)
 		}
+	default:
+		{
+			return []string{errBetweenUnuseable}
+		}
 	}
 
 	if !pass {
-		return fmt.Sprintf(errBetween, min, max)
+		return []string{errBetween, fmt.Sprint(min), fmt.Sprint(max)}
 	}
 
-	return ""
+	return noErrs
 }

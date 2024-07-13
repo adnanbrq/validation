@@ -8,29 +8,32 @@ import (
 )
 
 // JSONRule rule
-type JSONRule struct{}
+type JSONRule struct {
+}
 
-var (
-	errJSON = "is not a valid JSON object"
-)
+var errNoJson = "json"
+
+func (r JSONRule) Name() string {
+	return "json"
+}
 
 // Validate checks if the given value is a valid jwt token
-func (JSONRule) Validate(value interface{}, options interface{}) string {
+func (r JSONRule) Validate(value, options any) []string {
 	if helper.IsString(value) {
 		if err := json.Unmarshal([]byte(value.(string)), &map[string]interface{}{}); err != nil {
-			return errJSON
+			return []string{errNoJson}
 		}
 
-		return ""
+		return noErrs
 	}
 
 	if helper.IsStruct(value) {
-		return ""
+		return noErrs
 	}
 
 	if helper.IsMapOf(value, reflect.String, reflect.Interface) {
-		return ""
+		return noErrs
 	}
 
-	return errJSON
+	return []string{errNoJson}
 }

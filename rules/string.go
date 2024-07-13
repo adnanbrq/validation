@@ -9,23 +9,29 @@ import (
 // StringRule checks for strings
 type StringRule struct{}
 
-var errString = "is not a string"
+var (
+	errNoString = "no-string"
+)
+
+func (r StringRule) Name() string {
+	return "string"
+}
 
 // Validate if the given value is a string and satisfies Nullable
-func (r StringRule) Validate(value interface{}, options interface{}) string {
+func (r StringRule) Validate(value, options any) []string {
 	v := reflect.ValueOf(value)
 
 	if helper.IsPointer(value) {
 		if v.Elem().Kind() != reflect.String {
-			return errString
+			return []string{errNoString}
 		}
 
-		return ""
+		return noErrs
 	}
 
 	if !helper.IsString(value) {
-		return errString
+		return []string{errNoString}
 	}
 
-	return ""
+	return noErrs
 }

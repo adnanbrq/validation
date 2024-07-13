@@ -1,28 +1,32 @@
 package rules
 
 import (
-  "regexp"
+	"regexp"
 
-  "github.com/adnanbrq/validation/helper"
+	"github.com/adnanbrq/validation/helper"
 )
 
 // NumericRule rule
 type NumericRule struct{}
 
 var (
-  errNumeric = "is not a numeric value"
-  regNumeric = regexp.MustCompile("^-?[0-9]?.?[0-9]+(e+[0-9]+)?$")
+	errNumeric   = "no-numeric"
+	regexNumeric = regexp.MustCompile(`^(-)?([0-9]+)?(.)?([0-9]+)?(e\+)?([0-9]+)$`)
 )
 
+func (r NumericRule) Name() string {
+	return "numeric"
+}
+
 // Validate checks if the given value is a number or a string containing only numeric characters
-func (NumericRule) Validate(value interface{}, options interface{}) string {
-  if helper.IsString(value) && regNumeric.MatchString(value.(string)) {
-    return ""
-  }
+func (NumericRule) Validate(value, options any) []string {
+	if helper.IsString(value) && regexNumeric.MatchString(value.(string)) {
+		return noErrs
+	}
 
-  if helper.IsInt(value) || helper.IsUint(value) {
-    return ""
-  }
+	if helper.IsInt(value) || helper.IsUint(value) {
+		return noErrs
+	}
 
-  return errNumeric
+	return []string{errNumeric}
 }

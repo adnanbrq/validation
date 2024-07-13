@@ -1,60 +1,76 @@
 package rules
 
 import (
-  "fmt"
-  "reflect"
-  "strconv"
+	"fmt"
+	"reflect"
 
-  "github.com/adnanbrq/validation/helper"
+	"github.com/adnanbrq/validation/helper"
 )
 
 // MinRule rule
 type MinRule struct{}
 
 var (
-  errMinGeneral = "must be greater than or equal %d"
-  errMinArray   = "must contain atleast %d items"
+	errMin = "min"
 )
 
+func (r MinRule) Name() string {
+	return "min"
+}
+
 // Validate checks if the given value is greater or equal to given minimum
-func (MinRule) Validate(value interface{}, options interface{}) string {
-  if options == nil {
-    return ""
-  }
+func (r MinRule) Validate(value, options any) []string {
+	if options == nil {
+		return noErrs
+	}
 
-  min, err := strconv.Atoi(options.(string))
-  if err != nil {
-    return ""
-  }
+	numeric := NumericRule{}
+	if numericErrs := numeric.Validate(options, nil); len(numericErrs) != 0 {
+		return numericErrs
+	}
 
-  var size interface{} = nil
-  var msg interface{} = nil
+	var (
+		size any
+		min  any
+		pass bool
+	)
 
-  if helper.IsInt(value) {
-    size = value.(int)
-    msg = errMinGeneral
-  }
+	switch true {
+	case helper.IsString(value), helper.IsArray(value):
+		{
+			size = reflect.ValueOf(value).Len()
+			min = helper.ParseInt(options.(string))
+			pass = int64(size.(int)) >= min.(int64)
+		}
+	case helper.IsInt(value):
+		{
+			size = reflect.ValueOf(value).Int()
+			min = helper.ParseInt(options.(string))
+			pass = size.(int64) >= min.(int64)
+		}
+	case helper.IsUint(value):
+		{
+			size = reflect.ValueOf(value).Uint()
+			min = helper.ParseUint(options.(string))
+			pass = size.(uint64) >= min.(uint64)
+		}
+	case helper.IsFloat(value):
+		{
+			size = reflect.ValueOf(value).Float()
+			min = helper.ParseFloat(options.(string))
+			pass = size.(float64) >= min.(float64)
+		}
+	default:
+		{
+			size = 0
+			min = 0
+			pass = true
+		}
+	}
 
-  if helper.IsArray(value) {
-    size = reflect.ValueOf(value).Len()
-    msg = errMinArray
-  }
+	if !pass {
+		return []string{errMin, fmt.Sprint(min)}
+	}
 
-  if helper.IsString(value) {
-    size = len(value.(string))
-    msg = errMinGeneral
-  }
-
-  // Not a valid type - just pass
-  if msg == nil || size == nil {
-    return ""
-  }
-
-  msg = fmt.Sprintf(msg.(string), min)
-
-  if size.(int) < min {
-    return msg.(string)
-  }
-
-  return ""
+	return noErrs
 }

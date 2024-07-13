@@ -10,19 +10,23 @@ import (
 type JWTRule struct{}
 
 var (
-	regJWT = regexp.MustCompile(`^ey[0-9a-zA-Z_]+\.[0-9a-zA-Z_]+\.[0-9a-zA-Z_]+$`)
-	errJWT = "is not a valid JWT token"
+	regexJWT = regexp.MustCompile(`^ey[0-9a-zA-Z_]+\.[0-9a-zA-Z_]+\.[0-9a-zA-Z_]+$`)
+	errNoJwt = "no-jwt"
 )
 
+func (r JWTRule) Name() string {
+	return "jwt"
+}
+
 // Validate checks if the given value is a valid jwt token
-func (JWTRule) Validate(value interface{}, options interface{}) string {
+func (JWTRule) Validate(value, options any) []string {
 	if !helper.IsString(value) {
-		return errJWT
+		return []string{errNoString}
 	}
 
-	if !regJWT.MatchString(value.(string)) {
-		return errJWT
+	if !regexJWT.MatchString(value.(string)) {
+		return []string{errNoJwt}
 	}
 
-	return ""
+	return noErrs
 }

@@ -10,7 +10,9 @@ import (
 )
 
 type Validator struct {
-	customs map[string]Rule
+	customRules     map[string]rules.Rule
+	predefinedRules map[string]rules.Rule
+	messages        map[string]string
 }
 
 func (v *Validator) Validate(input interface{}) map[string][]string {
@@ -20,8 +22,8 @@ func (v *Validator) Validate(input interface{}) map[string][]string {
 	for i := 0; i < value.NumField(); i++ {
 		fieldName := strings.ToLower(value.Type().Field(i).Name)
 		fieldValue := value.Field(i).Interface()
-		fieldTag := value.Type().Field(i).Tag.Get(tag)
-		fieldRules := strings.Split(fieldTag, ruleDelimiter)
+		fieldTag := value.Type().Field(i).Tag.Get("valid")
+		fieldRules := strings.Split(fieldTag, "|")
 
 		// Skip upcoming rules as they all would fail and add unnecessary errors to an optional field
 		if strings.Contains(fieldTag, "nullable") && (fieldValue == nil || helper.IsNull(fieldValue)) {
@@ -31,14 +33,17 @@ func (v *Validator) Validate(input interface{}) map[string][]string {
 		// Skip upcoming rules as they all would fail and add unnecessary errors whereas only the message from RequiredRule
 		// fits best
 		if strings.Contains(fieldTag, "required") {
-			if err := (rules.RequiredRule{}).Validate(fieldValue, nil); err != "" {
-				result[fieldName] = append(result[fieldName], err)
-				continue
+			if errs := (rules.RequiredRule{}).Validate(fieldValue, nil); len(errs) > 0 {
+				msg, ok := v.messages[errs[0]]
+				if ok {
+					result[fieldName] = []string{msg}
+					continue
+				}
 			}
 		}
 
 		for _, rawRule := range fieldRules {
-			split := strings.Split(rawRule, optionDelimiter)
+			split := strings.Split(rawRule, ":")
 			ruleName := split[0]
 			var ruleOption interface{} = nil
 
@@ -46,24 +51,42 @@ func (v *Validator) Validate(input interface{}) map[string][]string {
 				ruleOption = split[1]
 			}
 
-			rule, ruleExists := v.customs[ruleName]
+			var rule rules.Rule
+			var ruleFound bool
 
-			if !ruleExists {
-				rule = getRule(ruleName)
+			rule, ruleFound = v.customRules[ruleName]
+
+			if !ruleFound {
+				rule, ruleFound = v.predefinedRules[ruleName]
 			}
 
-			if err := rule.Validate(fieldValue, ruleOption); len(err) != 0 {
-				result[fieldName] = append(result[fieldName], err)
+			if !ruleFound {
+				continue
+			}
+
+			errs := rule.Validate(fieldValue, ruleOption)
+			if len(errs) == 0 {
+				continue
+			}
+
+			if msg, ok := v.messages[errs[0]]; ok {
+				if len(errs) > 1 {
+					opts := []any{}
+					for _, err := range errs[1:] {
+						opts = append(opts, err)
+					}
+
+					result[fieldName] = append(result[fieldName], fmt.Sprintf(msg, opts...))
+				} else {
+					result[fieldName] = append(result[fieldName], msg)
+				}
 			}
 		}
 
 		if helper.IsStruct(fieldValue) {
-			internalValidationErrors := v.Validate(fieldValue)
-			if len(internalValidationErrors) > 0 {
-				for k := range internalValidationErrors {
-					for _, err := range internalValidationErrors[k] {
-						result[fmt.Sprintf("%s.%s", fieldName, k)] = append(result[fieldName], err)
-					}
+			if errs := v.Validate(fieldValue); len(errs) > 0 {
+				for deepField := range errs {
+					result[fmt.Sprintf("%s.%s", fieldName, deepField)] = errs[deepField]
 				}
 			}
 		}
@@ -72,14 +95,64 @@ func (v *Validator) Validate(input interface{}) map[string][]string {
 	return result
 }
 
-func (v *Validator) AppendRule(name string, rule Rule) *Validator {
-	v.customs[name] = rule
+func (v *Validator) AppendRule(rule rules.Rule) *Validator {
+	v.customRules[rule.Name()] = rule
+
+	return v
+}
+
+func (v *Validator) SetMessage(name, message string) *Validator {
+	v.messages[name] = message
+
+	return v
+}
+
+func (v *Validator) SetMessages(messages map[string]string) *Validator {
+	v.messages = messages
 
 	return v
 }
 
 func NewValidator() *Validator {
+	messages := map[string]string{
+		"between":           "must be between %s and %s",
+		"between-unuseable": "value is not useable",
+		"no-bool":           "is not a bool",
+		"default":           "",
+		"email":             "is not a email",
+		"json":              "is not a valid JSON Object",
+		"jwt":               "is not a valid JSON Web Token",
+		"min":               "must be greater than or equal to %s",
+		"max":               "must be less than or equal to %s",
+		"no-numeric":        "is not a number",
+		"no-pointer":        "is not a pointer",
+		"required":          "is required",
+		"no-string":         "is not a string",
+	}
+
+	predefinedRules := map[string]rules.Rule{}
+	ruleBucket := []rules.Rule{
+		rules.BetweenRule{},
+		rules.BoolRule{},
+		rules.DefaultRule{},
+		rules.EmailRule{},
+		rules.JSONRule{},
+		rules.JWTRule{},
+		rules.MaxRule{},
+		rules.MinRule{},
+		rules.NumericRule{},
+		rules.PointerRule{},
+		rules.RequiredRule{},
+		rules.StringRule{},
+	}
+
+	for _, rule := range ruleBucket {
+		predefinedRules[rule.Name()] = rule
+	}
+
 	return &Validator{
-		customs: map[string]Rule{},
+		messages:        messages,
+		customRules:     map[string]rules.Rule{},
+		predefinedRules: predefinedRules,
 	}
 }

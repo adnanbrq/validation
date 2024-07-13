@@ -10,27 +10,31 @@ import (
 
 type SnakeCaseRule struct{}
 
-func (SnakeCaseRule) Validate(value interface{}, options interface{}) string {
+func (r SnakeCaseRule) Name() string {
+	return "snake_case"
+}
+
+func (SnakeCaseRule) Validate(value, options any) []string {
 	if !helper.IsString(value) {
-		return "is not snake case formatted"
+		return []string{"not-snakecase"}
 	}
 
 	if regexp.MustCompile("[a-zA-Z]+(?:_[a-zA-Z]+)*").MatchString(value.(string)) {
-		return "is not snake case formatted"
+		return []string{"not-snakecase"}
 	}
 
-	return ""
+	return []string{}
 }
 
 func TestCustomRules(t *testing.T) {
 	type Input struct {
-		ProfileName any `valid:"nullable|pointer|string|SnakeCase|min:4|max:32"`
+		ProfileName any `valid:"nullable|pointer|string|snake_case|min:4|max:32"`
 	}
 
 	invalidSnakeCase := "Helloworld"
 	validSnakeCase := "Hello_World"
 	noString := 4
-	v := NewValidator().AppendRule("SnakeCase", SnakeCaseRule{})
+	v := NewValidator().AppendRule(SnakeCaseRule{}).SetMessage("not-snakecase", "is not snake case formatted")
 
 	assert.Equal(t, map[string][]string{}, v.Validate(Input{ProfileName: nil}))
 	assert.Equal(t, map[string][]string{
@@ -51,6 +55,29 @@ func TestCustomRules(t *testing.T) {
 	assert.Equal(t, map[string][]string{
 		"profilename": {"is not snake case formatted"},
 	}, v.Validate(Input{ProfileName: &invalidSnakeCase}))
+}
+
+func TestMessages(t *testing.T) {
+	type Input struct {
+		String any `valid:"string"`
+		Bool   any `valid:"bool"`
+	}
+
+	errs := NewValidator().
+		SetMessages(map[string]string{
+			"no-string": "string message",
+			"no-bool":   "bool message",
+		}).
+		Validate(Input{
+			String: false,
+			Bool:   "false",
+		})
+
+	assert.NotEmpty(t, errs)
+	assert.Equal(t, map[string][]string{
+		"string": {"string message"},
+		"bool":   {"bool message"},
+	}, errs)
 }
 
 func TestValid(t *testing.T) {

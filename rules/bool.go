@@ -1,7 +1,6 @@
 package rules
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/adnanbrq/validation/helper"
@@ -11,26 +10,30 @@ import (
 type BoolRule struct{}
 
 var (
-	errNoBool            = "is not a boolean value"
-	errBoolValueMismatch = "has to be %v"
+	errNoBool        = "no-bool"
+	errValueMismatch = "value-mismatch"
 )
 
+func (r BoolRule) Name() string {
+	return "bool"
+}
+
 // Validate checks if the given value is a boolean
-func (BoolRule) Validate(value interface{}, options interface{}) string {
+func (r BoolRule) Validate(value, options any) []string {
 	if !helper.IsBool(value) {
-		return errNoBool
+		return []string{errNoBool}
 	}
 
 	if options == nil || !helper.IsString(options) {
-		return ""
+		return noErrs
 	}
 
 	expected := helper.ParseBool(options.(string))
 	v := reflect.ValueOf(value)
 
 	if v.Bool() != expected {
-		return fmt.Sprintf(errBoolValueMismatch, expected)
+		return []string{errValueMismatch, options.(string)}
 	}
 
-	return ""
+	return noErrs
 }
