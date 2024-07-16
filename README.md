@@ -13,6 +13,7 @@ in the tests.
 ## Contents
 
 - [Installation](#installation)
+- [Testing](#testing)
 - [Usage](#usage)
 - [Rules](#rules)
 - [Dependencies](#dependencies)
@@ -22,6 +23,11 @@ in the tests.
 ```sh
 $ go get -u github.com/adnanbrq/validation
 ```
+
+## Testing
+
+The whole package, rules and helpers, will be tested to achieve the required minimum coverage of 100%.\
+There is currently no verifier implemented for the CI, but this step is planned.
 
 ## Usage
 
@@ -62,7 +68,7 @@ func main() {
 ## Rules
 
 | Name     | Logic                                                            | Options                  |
-|----------|------------------------------------------------------------------|--------------------------|
+| -------- | ---------------------------------------------------------------- | ------------------------ |
 | required | Checks that the value is not nil                                 | -                        |
 | nullable | Checks that no rules are run if the value is nil                 | -                        |
 | bool     | Checks that the value is 0,1,true or false                       | true or false or 0 or 1  |
