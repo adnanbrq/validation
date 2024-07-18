@@ -177,6 +177,12 @@ func NewValidator() *Validator {
     "no-pointer":        "is not a pointer",
     "required":          "is required",
     "no-string":         "is not a string",
+    "no-int":            "is not a integer",
+    "int-wrong-size":    "value has a wrong bit size",
+    "no-uint":           "is not a unsigned integer",
+    "uint-wrong-size":   "value has a wrong bit size",
+    "no-float":          "is not a float",
+    "float-wrong-size":  "value has a wrong bit size",
   }
 
   predefinedRules := map[string]rules.Rule{}
@@ -193,6 +199,9 @@ func NewValidator() *Validator {
     rules.PointerRule{},
     rules.RequiredRule{},
     rules.StringRule{},
+    rules.IntRule{},
+    rules.UintRule{},
+    rules.FloatRule{},
   }
 
   for _, rule := range ruleBucket {

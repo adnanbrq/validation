@@ -78,15 +78,18 @@ func main() {
 |----------|------------------------------------------------------------------|--------------------------|
 | required | Checks that the value is not nil                                 | -                        |
 | nullable | Checks that no rules are run if the value is nil                 | -                        |
-| bool     | Checks that the value is 0,1,true or false                       | true or false or 0 or 1  |
+| bool     | Checks that the value is 0,1,true or false                       | bool e.g. true,false,0,1 |
 | default  | Does nothing                                                     | -                        |
 | email    | Checks that the value is a string and matches a predefined regex | -                        |
 | json     | Checks that given value is a map or a regex verified json string | -                        |
 | jwt      | Checks that the value is a string matching ABC.DEF.GHI           | -                        |
-| between  | Checks that the value's length or size is in given range         | Comma seperated: min,max |
-| max      | Checks length of strings, size of ints, etc.                     | max                      |
-| min      | Checks length of strings, size of ints, etc.                     | min                      |
-| numeric  | Checks that the value is int,int32,int64,uint32, ...             | -                        |
+| between  | Checks that the value's length or size is in given range         | min,max e.g. 0,32        |
+| max      | Checks length of strings, size of ints, etc.                     | max e.g. 0               |
+| min      | Checks length of strings, size of ints, etc.                     | min e.g. 32              |
+| numeric  | Checks that the value is int,int32,int64,uint32,float32, ...     | -                        |
+| int      | Checks that the value is int,int8,int16,int32,int64.             | bitsize 32 or 64         |
+| uint     | Checks that the value is uint,uint8,uint16,uint32,uint64.        | bitsize 32 or 64         |
+| float    | Checks that the value is float32,float64.                        | bitsize 32 or 64         |
 | string   | Checks that the value is a string or points to a string          | -                        |
 | pointer  | Checks that the value is a pointer                               | -                        |
 
