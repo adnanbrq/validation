@@ -1,8 +1,6 @@
 package rules
 
 import (
-	"reflect"
-
 	"github.com/adnanbrq/validation/helper"
 )
 
@@ -19,14 +17,8 @@ func (r StringRule) Name() string {
 
 // Validate if the given value is a string and satisfies Nullable
 func (r StringRule) Validate(value, options any) []string {
-	v := reflect.ValueOf(value)
-
 	if helper.IsPointer(value) {
-		if v.Elem().Kind() != reflect.String {
-			return []string{errNoString}
-		}
-
-		return noErrs
+		return StringRule{}.Validate(helper.UnwrapPointer(value), options)
 	}
 
 	if !helper.IsString(value) {

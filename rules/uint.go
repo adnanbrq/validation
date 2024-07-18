@@ -20,6 +20,10 @@ func (r UintRule) Name() string {
 
 // Validate checks if the given value is either a float32 or float64
 func (UintRule) Validate(value, options any) []string {
+	if helper.IsPointer(value) {
+		return UintRule{}.Validate(helper.UnwrapPointer(value), options)
+	}
+
 	checkSize := func(size string) []string {
 		if options != nil && helper.IsString(options) {
 			if options.(string) == size {

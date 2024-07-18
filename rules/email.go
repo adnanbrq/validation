@@ -17,6 +17,10 @@ func (r EmailRule) Name() string {
 
 // Validate checks if the given value is a valid email
 func (r EmailRule) Validate(value, options any) []string {
+	if helper.IsPointer(value) {
+		return EmailRule{}.Validate(helper.UnwrapPointer(value), options)
+	}
+
 	if !helper.IsString(value) {
 		return []string{errEmail}
 	}

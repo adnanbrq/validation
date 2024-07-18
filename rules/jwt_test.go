@@ -12,6 +12,7 @@ func TestJWT(t *testing.T) {
 	dummyJWT := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 	Validate := JWTRule{}.Validate
 
+	assert.Equal(t, noErrs, Validate(&dummyJWT, nil))
 	// Valid (well the format)
 	assert.Equal(t, noErrs, Validate("eyaaa.bbb.yyyy", nil))
 	assert.Equal(t, noErrs, Validate(dummyJWT, nil))

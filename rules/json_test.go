@@ -10,6 +10,9 @@ func TestJSON(t *testing.T) {
 	Validate := JSONRule{}.Validate
 	assert.NotEmpty(t, JSONRule{}.Name())
 
+	val := "{}"
+	assert.Equal(t, noErrs, Validate(&val, nil))
+
 	// Valid
 	assert.Equal(t, noErrs, Validate("{\"foo\": \"bar\"}", nil))
 	assert.Equal(t, noErrs, Validate("{\"foo\": 1}", nil))

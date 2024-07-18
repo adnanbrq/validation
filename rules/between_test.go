@@ -13,6 +13,9 @@ func TestBetween(t *testing.T) {
 
 	assert.NotEmpty(t, BetweenRule{}.Name())
 
+	vStr := "Test"
+	assert.Equal(t, noErrs, Validate(&vStr, "1,4"))
+
 	// Unuseable
 	assert.Equal(t, noErrs, Validate("Hey", 1))
 	assert.Equal(t, []string{errBetweenUnuseable}, Validate("Hey", nil))

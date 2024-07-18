@@ -25,8 +25,8 @@ func (r BetweenRule) Validate(value, options any) []string {
 	v := reflect.ValueOf(value)
 	o := reflect.ValueOf(options)
 
-	if helper.IsPointer(value) || helper.IsPointer(options) {
-		return []string{errBetweenUnuseable}
+	if helper.IsPointer(value) {
+		return BetweenRule{}.Validate(helper.UnwrapPointer(value), options)
 	}
 
 	if value == nil || options == nil {

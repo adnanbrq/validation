@@ -10,6 +10,9 @@ func TestEmail(t *testing.T) {
 	Validate := EmailRule{}.Validate
 	assert.NotEmpty(t, EmailRule{}.Name())
 
+	val := "test@test.com"
+	assert.Equal(t, noErrs, Validate(&val, nil))
+
 	// Valid
 	assert.Equal(t, noErrs, Validate("test@test.com", nil))
 

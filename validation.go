@@ -24,6 +24,9 @@ type Validator struct {
 
   // messages holds custom error messages for validation errors.
   messages map[string]string
+
+  // fieldMessages holds custom error messages for validation errors of specific fields.
+  fieldMessages map[string]string
 }
 
 // ErrInvalidInput is returned when the input to the Validate method is not a struct.
@@ -60,7 +63,13 @@ func (v *Validator) getErrorMessages(fieldName string, errs []string) (messages 
   }
 
   buf := bytes.Buffer{}
-  if msg, ok := v.messages[errs[0]]; ok {
+  msg, ok := v.messages[errs[0]]
+
+  if fieldMsg, hasFieldMsg := v.fieldMessages[fmt.Sprintf("%s.%s", fieldName, errs[0])]; hasFieldMsg {
+    msg = fieldMsg
+  }
+
+  if ok && len(msg) > 0 {
     t := template.Must(template.New("").Parse(msg))
     if err := t.Execute(&buf, opts); err == nil {
       messages = append(messages, buf.String())
@@ -98,7 +107,8 @@ func (v *Validator) applyRule(fieldName, rawRule string, value interface{}) []st
     ruleOption = split[1]
   }
 
-  errs := v.getRule(ruleName).Validate(value, ruleOption)
+  rule := v.getRule(ruleName)
+  errs := rule.Validate(value, ruleOption)
   return v.getErrorMessages(fieldName, errs)
 }
 
@@ -152,6 +162,12 @@ func (v *Validator) AppendRule(rule rules.Rule) *Validator {
 
 func (v *Validator) SetMessage(name, message string) *Validator {
   v.messages[name] = message
+
+  return v
+}
+
+func (v *Validator) SetFieldMessage(field, rule, message string) *Validator {
+  v.fieldMessages[fmt.Sprintf("%s.%s", field, rule)] = message
 
   return v
 }
@@ -210,6 +226,7 @@ func NewValidator() *Validator {
 
   return &Validator{
     messages:        messages,
+    fieldMessages:   map[string]string{},
     customRules:     map[string]rules.Rule{},
     predefinedRules: predefinedRules,
   }

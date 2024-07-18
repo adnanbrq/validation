@@ -13,8 +13,10 @@ func TestUint(t *testing.T) {
 
 	noUint := []string{errNoUint}
 	wrongSize := []string{errUintWrongSize}
+	val := uint(12)
 
 	assert.NotEmpty(t, rule.Name())
+	assert.Equal(t, noErrs, Validate(&val, nil))
 	assert.Equal(t, noUint, Validate(0, ""))
 	assert.Equal(t, noUint, Validate(0, 0))
 	assert.Equal(t, noUint, Validate(0, false))

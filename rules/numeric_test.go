@@ -8,8 +8,10 @@ import (
 
 func TestNumeric(t *testing.T) {
 	Validate := NumericRule{}.Validate
+	val := "1"
 
 	assert.NotEmpty(t, NumericRule{}.Name())
+	assert.Equal(t, noErrs, Validate(&val, nil))
 
 	// Valid
 	assert.Equal(t, noErrs, Validate("123", nil))

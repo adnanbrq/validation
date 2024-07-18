@@ -12,6 +12,9 @@ func TestMax(t *testing.T) {
 
 	assert.NotEmpty(t, MaxRule{}.Name())
 
+	val := rand.Int31()
+	assert.Equal(t, noErrs, Validate(&val, nil))
+
 	// Invalid Input
 	assert.Equal(t, noErrs, Validate(2, nil))
 	assert.Equal(t, []string{errNumeric}, Validate(2, ""))

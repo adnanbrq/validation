@@ -20,6 +20,10 @@ func (r MaxRule) Name() string {
 
 // Validate checks if the given value is greater or equal to given minimum
 func (MaxRule) Validate(value, options any) []string {
+	if helper.IsPointer(value) {
+		return MaxRule{}.Validate(helper.UnwrapPointer(value), options)
+	}
+
 	if options == nil {
 		return noErrs
 	}

@@ -11,6 +11,8 @@ func TestBool(t *testing.T) {
 
 	assert.NotEmpty(t, BoolRule{}.Name())
 
+	val := false
+	assert.Equal(t, noErrs, Validate(&val, nil))
 	assert.Equal(t, noErrs, Validate(true, nil))
 	assert.Equal(t, noErrs, Validate(true, 1))
 	assert.Equal(t, noErrs, Validate(true, "true"))
