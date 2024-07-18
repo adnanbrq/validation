@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/adnanbrq/validation/helper"
+	"github.com/adnanbrq/validation/v2/helper"
 	"github.com/stretchr/testify/assert"
 )
 

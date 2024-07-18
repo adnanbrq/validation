@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/adnanbrq/validation/helper"
+	"github.com/adnanbrq/validation/v2/helper"
 )
 
 // MaxRule rule
