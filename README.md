@@ -51,7 +51,14 @@ func main() {
     Password: "This is a secret",
   }
 
-  result, err := validation.NewValidator().Validate(signUpDTO)
+  result, err := validation.
+    NewValidator().
+    // SetMessage can be used to set a custom message for a Rule using templates
+    // You can also override every rule message with SetMessages(map[string]string{})
+    // You can use the options {Name, O1, O2}.
+    // O1 = Option 1. "1" would be O1 for Rule "between:1,2" or Rule "min:1"
+    SetMessage("no-string", "{{.Name}} is not a valid string.").
+    Validate(signUpDTO)
 
   if err != nil {
     panic(err)
@@ -68,7 +75,7 @@ func main() {
 ## Rules
 
 | Name     | Logic                                                            | Options                  |
-| -------- | ---------------------------------------------------------------- | ------------------------ |
+|----------|------------------------------------------------------------------|--------------------------|
 | required | Checks that the value is not nil                                 | -                        |
 | nullable | Checks that no rules are run if the value is nil                 | -                        |
 | bool     | Checks that the value is 0,1,true or false                       | true or false or 0 or 1  |
