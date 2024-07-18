@@ -3,7 +3,6 @@ package rules
 import (
 	"fmt"
 	"reflect"
-	"strconv"
 	"strings"
 
 	"github.com/adnanbrq/validation/helper"
@@ -13,48 +12,92 @@ import (
 type BetweenRule struct{}
 
 var (
-	betweenDelimiter = ","
-	errBetween       = "must be between %d and %d"
+	errBetween          = "between"
+	errBetweenUnuseable = "between-unuseable"
 )
 
+func (r BetweenRule) Name() string {
+	return "between"
+}
+
 // Validate if the value is between given values in length or value
-func (BetweenRule) Validate(value interface{}, options interface{}) string {
-	if options == nil {
-		return ""
+func (r BetweenRule) Validate(value, options any) []string {
+	v := reflect.ValueOf(value)
+	o := reflect.ValueOf(options)
+
+	if helper.IsPointer(value) {
+		return BetweenRule{}.Validate(helper.UnwrapPointer(value), options)
 	}
 
-	values := strings.Split(options.(string), betweenDelimiter)
+	if value == nil || options == nil {
+		return []string{errBetweenUnuseable}
+	}
+
+	if o.Kind() != reflect.String {
+		return noErrs
+	}
+
+	values := strings.Split(o.String(), ",")
 	if len(values) != 2 {
-		return ""
+		return noErrs
 	}
 
-	min, err := strconv.Atoi(values[0])
-	if err != nil {
-		return ""
+	numeric := NumericRule{}
+	numericErrsMin := numeric.Validate(values[0], nil)
+	numericErrsMax := numeric.Validate(values[1], nil)
+
+	if len(numericErrsMin) > 0 {
+		return numericErrsMin
 	}
 
-	max, err := strconv.Atoi(values[1])
-	if err != nil {
-		return ""
+	if len(numericErrsMax) > 0 {
+		return numericErrsMax
 	}
 
-	var size int = -1
+	var (
+		min  any
+		max  any
+		pass bool = false
+	)
 
-	if helper.IsString(value) {
-		size = len(value.(string))
+	switch true {
+	case helper.IsString(value), helper.IsArray(value):
+		{
+			min = helper.ParseInt(values[0])
+			max = helper.ParseInt(values[1])
+
+			pass = int64(v.Len()) >= min.(int64) && int64(v.Len()) <= max.(int64)
+		}
+	case helper.IsInt(value):
+		{
+			min = helper.ParseInt(values[0])
+			max = helper.ParseInt(values[1])
+
+			pass = v.CanInt() && v.Int() >= min.(int64) && v.Int() <= max.(int64)
+		}
+	case helper.IsUint(value):
+		{
+			min = helper.ParseUint(values[0])
+			max = helper.ParseUint(values[1])
+
+			pass = v.CanUint() && v.Uint() >= min.(uint64) && v.Uint() <= max.(uint64)
+		}
+	case helper.IsFloat(value):
+		{
+			min = helper.ParseFloat(values[0])
+			max = helper.ParseFloat(values[1])
+
+			pass = v.CanFloat() && v.Float() >= min.(float64) && v.Float() <= max.(float64)
+		}
+	default:
+		{
+			return []string{errBetweenUnuseable}
+		}
 	}
 
-	if helper.IsArray(value) {
-		size = reflect.ValueOf(value).Len()
+	if !pass {
+		return []string{errBetween, fmt.Sprint(min), fmt.Sprint(max)}
 	}
 
-	if helper.IsInt(value) {
-		size = value.(int)
-	}
-
-	if size >= min && size <= max {
-		return ""
-	}
-
-	return fmt.Sprintf(errBetween, min, max)
+	return noErrs
 }

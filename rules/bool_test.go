@@ -9,11 +9,20 @@ import (
 func TestBool(t *testing.T) {
 	Validate := BoolRule{}.Validate
 
-	assert.Equal(t, "", Validate(true, nil))
-	assert.Equal(t, "", Validate(true, "true"))
-	assert.Equal(t, "", Validate(false, "false"))
-	assert.Equal(t, "has to be true", Validate(false, "true"))
-	assert.Equal(t, "has to be false", Validate(true, "false"))
-	assert.Equal(t, "is not a boolean value", Validate(123, nil))
-	assert.Equal(t, "is not a boolean value", Validate("123", nil))
+	assert.NotEmpty(t, BoolRule{}.Name())
+
+	val := false
+	assert.Equal(t, noErrs, Validate(&val, nil))
+	assert.Equal(t, noErrs, Validate(true, nil))
+	assert.Equal(t, noErrs, Validate(true, 1))
+	assert.Equal(t, noErrs, Validate(true, "true"))
+	assert.Equal(t, noErrs, Validate(false, "false"))
+	assert.Equal(t, []string{errValueMismatch, "true"}, Validate(false, "true"))
+	assert.Equal(t, []string{errValueMismatch, "false"}, Validate(true, "false"))
+	assert.Equal(t, []string{errNoBool}, Validate("1", "true"))
+	assert.Equal(t, []string{errNoBool}, Validate("0", "false"))
+	assert.Equal(t, []string{errNoBool}, Validate("true", "true"))
+	assert.Equal(t, []string{errNoBool}, Validate("false", "false"))
+	assert.Equal(t, []string{errNoBool}, Validate(123, nil))
+	assert.Equal(t, []string{errNoBool}, Validate("123", nil))
 }

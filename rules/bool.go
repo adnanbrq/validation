@@ -1,31 +1,43 @@
 package rules
 
 import (
-	"fmt"
+  "reflect"
 
-	"github.com/adnanbrq/validation/helper"
+  "github.com/adnanbrq/validation/helper"
 )
 
 // BoolRule rule
 type BoolRule struct{}
 
 var (
-	errBool              = "is not a boolean value"
-	errBoolValueMismatch = "has to be %v"
+  errNoBool        = "no-bool"
+  errValueMismatch = "value-mismatch"
 )
 
+func (r BoolRule) Name() string {
+  return "bool"
+}
+
 // Validate checks if the given value is a boolean
-func (BoolRule) Validate(value interface{}, options interface{}) string {
-	if !helper.IsBool(value) {
-		return errBool
-	}
+func (r BoolRule) Validate(value, options any) []string {
+  if helper.IsPointer(value) {
+    return BoolRule{}.Validate(helper.UnwrapPointer(value), options)
+  }
 
-	if options != nil {
-		expected := options.(string) == "true"
-		if value.(bool) != expected {
-			return fmt.Sprintf(errBoolValueMismatch, expected)
-		}
-	}
+  if !helper.IsBool(value) {
+    return []string{errNoBool}
+  }
 
-	return ""
+  if options == nil || !helper.IsString(options) {
+    return noErrs
+  }
+
+  expected := helper.ParseBool(options.(string))
+  v := reflect.ValueOf(value)
+
+  if v.Bool() != expected {
+    return []string{errValueMismatch, options.(string)}
+  }
+
+  return noErrs
 }

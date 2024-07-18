@@ -1,28 +1,36 @@
 package rules
 
 import (
-	"regexp"
+  "regexp"
 
-	"github.com/adnanbrq/validation/helper"
+  "github.com/adnanbrq/validation/helper"
 )
 
 // JWTRule rule
 type JWTRule struct{}
 
 var (
-	regJWT = regexp.MustCompile(`^ey[0-9a-zA-Z_]+\.[0-9a-zA-Z_]+\.[0-9a-zA-Z_]+$`)
-	errJWT = "is not a valid JWT token"
+  regexJWT = regexp.MustCompile(`^ey[0-9a-zA-Z_]+\.[0-9a-zA-Z_]+\.[0-9a-zA-Z_]+$`)
+  errNoJwt = "no-jwt"
 )
 
+func (r JWTRule) Name() string {
+  return "jwt"
+}
+
 // Validate checks if the given value is a valid jwt token
-func (JWTRule) Validate(value interface{}, options interface{}) string {
-	if !helper.IsString(value) {
-		return errJWT
-	}
+func (JWTRule) Validate(value, options any) []string {
+  if helper.IsPointer(value) {
+    return JWTRule{}.Validate(helper.UnwrapPointer(value), options)
+  }
 
-	if regJWT.MatchString(value.(string)) == false {
-		return errJWT
-	}
+  if !helper.IsString(value) {
+    return []string{errNoString}
+  }
 
-	return ""
+  if !regexJWT.MatchString(value.(string)) {
+    return []string{errNoJwt}
+  }
+
+  return noErrs
 }

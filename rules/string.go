@@ -1,23 +1,29 @@
 package rules
 
-import "github.com/adnanbrq/validation/helper"
+import (
+	"github.com/adnanbrq/validation/helper"
+)
 
 // StringRule checks for strings
-type StringRule struct {
-	// Nullable bool
+type StringRule struct{}
+
+var (
+	errNoString = "no-string"
+)
+
+func (r StringRule) Name() string {
+	return "string"
 }
 
-var errString = "is not a string"
-
 // Validate if the given value is a string and satisfies Nullable
-func (r StringRule) Validate(value interface{}, options interface{}) string {
-	if !helper.IsString(value) || value == nil {
-		return errString
+func (r StringRule) Validate(value, options any) []string {
+	if helper.IsPointer(value) {
+		return StringRule{}.Validate(helper.UnwrapPointer(value), options)
 	}
 
-	// if len(value.(string)) == 0 || value == nil {
-	// 	return errString
-	// }
+	if !helper.IsString(value) {
+		return []string{errNoString}
+	}
 
-	return ""
+	return noErrs
 }

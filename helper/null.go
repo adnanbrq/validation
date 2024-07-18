@@ -1,30 +1,23 @@
 package helper
 
-import "reflect"
+import (
+	"reflect"
+)
 
 // IsNull checks if the given value is null
-func IsNull(value interface{}) bool {
-	valueOf := reflect.ValueOf(value)
-
+func IsNull(value any) bool {
 	if value == nil {
 		return true
 	}
 
-	if IsString(value) && len(value.(string)) == 0 {
-		return true
+	v := reflect.ValueOf(value)
+	switch v.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Pointer, reflect.UnsafePointer, reflect.Interface, reflect.Slice:
+		{
+			return v.IsNil()
+		}
+	default:
+		// Everything else cannot be null / nil or empty. We do not check for IsZero because the zero value is not nil
+		return false
 	}
-
-	if IsArray(value) && valueOf.Len() == 0 {
-		return true
-	}
-
-	if valueOf.Kind() == reflect.Map || valueOf.Kind() == reflect.Chan {
-		return valueOf.Len() == 0
-	}
-
-	if valueOf.Kind() == reflect.Struct {
-		return reflect.TypeOf(value).NumField() == 0
-	}
-
-	return false
 }
