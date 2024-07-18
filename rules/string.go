@@ -1,7 +1,7 @@
 package rules
 
 import (
-	"github.com/adnanbrq/validation/helper"
+	"github.com/adnanbrq/validation/v2/helper"
 )
 
 // StringRule checks for strings

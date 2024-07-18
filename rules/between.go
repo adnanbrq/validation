@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/adnanbrq/validation/helper"
+	"github.com/adnanbrq/validation/v2/helper"
 )
 
 // BetweenRule rule

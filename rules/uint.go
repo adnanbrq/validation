@@ -3,7 +3,7 @@ package rules
 import (
 	"reflect"
 
-	"github.com/adnanbrq/validation/helper"
+	"github.com/adnanbrq/validation/v2/helper"
 )
 
 // UintRule rule
