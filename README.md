@@ -97,3 +97,4 @@ func main() {
 
 - [github.com/stretchr/testify - v1.9.0](https://github.com/stretchr/testify)
   Assertions
+- [golang.org/x/text - v0.16.0](https://golang.org/x/text) Go lib for text processing 
