@@ -37,7 +37,7 @@ jobs:
       - name: Update README with coverage badge
         run: |
           COVERAGE=${{ env.COVERAGE }}
-          BADGE="![Coverage](https://img.shields.io/badge/Coverage-${COVERAGE}-brightgreen)"
+          BADGE="[![Coverage](https://img.shields.io/badge/Coverage-${COVERAGE}-brightgreen)]"
           sed -i "1 s|.*|${BADGE}|" README.md
 
       - name: Push README changes (PR Only)
