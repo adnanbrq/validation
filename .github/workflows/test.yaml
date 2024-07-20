@@ -1,0 +1,44 @@
+name: Testing
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.22
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run tests
+        run: go test -v -coverprofile=coverage.out ./...
+
+      - name: Extract coverage percentage
+        id: extract_coverage
+        run: |
+          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}')
+          echo "COVERAGE=${COVERAGE}" >> $GITHUB_ENV
+
+      - name: Update README with coverage badge
+        run: |
+          COVERAGE=${{ env.COVERAGE }}
+          BADGE="[![Coverage](https://img.shields.io/badge/Coverage-${COVERAGE}-brightgreen)](./coverage.out)"
+          sed -i "1s/.*/${BADGE}/" README.md
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "Update coverage badge in README"
+          git push
