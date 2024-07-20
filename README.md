@@ -1,4 +1,4 @@
-![Coverage](https://img.shields.io/badge/Coverage-100.0%-brightgreen)
+[![Coverage](https://img.shields.io/badge/Coverage-100.0%-brightgreen)]
 
 # Go Validation
 
