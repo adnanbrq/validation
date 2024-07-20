@@ -1,3 +1,5 @@
+![Coverage](https://img.shields.io/badge/Coverage-100-brightgreen)
+
 # Go Validation
 
 This package allows you to annotate your structs with a tag named "valid" to apply field specific validations. This
@@ -75,7 +77,7 @@ func main() {
 ## Rules
 
 | Name     | Logic                                                            | Options                  |
-|----------|------------------------------------------------------------------|--------------------------|
+| -------- | ---------------------------------------------------------------- | ------------------------ |
 | required | Checks that the value is not nil                                 | -                        |
 | nullable | Checks that no rules are run if the value is nil                 | -                        |
 | bool     | Checks that the value is 0,1,true or false                       | bool e.g. true,false,0,1 |
@@ -97,4 +99,4 @@ func main() {
 
 - [github.com/stretchr/testify - v1.9.0](https://github.com/stretchr/testify)
   Assertions
-- [golang.org/x/text - v0.16.0](https://golang.org/x/text) Go lib for text processing 
+- [golang.org/x/text - v0.16.0](https://golang.org/x/text) Go lib for text processing
