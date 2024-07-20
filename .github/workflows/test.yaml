@@ -44,3 +44,4 @@ jobs:
           default_author: github_actions
           message: Update coverage badge in README
           add: README.md
+          push: origin HEAD:${{ steps.extract_branch.outputs.branch }}
