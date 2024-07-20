@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -38,7 +40,8 @@ jobs:
           BADGE="[![Coverage](https://img.shields.io/badge/Coverage-${COVERAGE}-brightgreen)](./coverage.out)"
           sed -i "1 s|.*|${BADGE}|" README.md
 
-      - name: Push README changes
+      - name: Push README changes (PR Only)
+        if: ${{ github.event_name == 'pull_request' }}
         uses: EndBug/add-and-commit@v9
         with:
           default_author: github_actions
