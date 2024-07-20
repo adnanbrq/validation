@@ -32,12 +32,12 @@ jobs:
         id: extract_coverage
         run: |
           COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}')
-          echo "COVERAGE=${COVERAGE}" >> $GITHUB_ENV
+          echo "COVERAGE=${COVERAGE:0:3}" >> $GITHUB_ENV
 
       - name: Update README with coverage badge
         run: |
           COVERAGE=${{ env.COVERAGE }}
-          BADGE="[![Coverage](https://img.shields.io/badge/Coverage-${COVERAGE}-brightgreen)]"
+          BADGE="![Coverage](https://img.shields.io/badge/Coverage-${COVERAGE}-brightgreen)"
           sed -i "1 s|.*|${BADGE}|" README.md
 
       - name: Push README changes (PR Only)
