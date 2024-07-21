@@ -57,7 +57,7 @@ func (r BetweenRule) Validate(value, options any) []string {
 	var (
 		min  any
 		max  any
-		pass bool = false
+		pass bool
 	)
 
 	switch true {

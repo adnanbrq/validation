@@ -23,7 +23,7 @@ in the tests.
 ## Installation
 
 ```sh
-$ go get -u github.com/adnanbrq/validation
+$ go get -u github.com/adnanbrq/validation/v2
 ```
 
 ## Testing
@@ -38,13 +38,13 @@ package main
 
 import (
   "fmt"
-  "github.com/adnanbrq/validation"
+  "github.com/adnanbrq/validation/v2"
 )
 
 type SignUpSchema struct {
-  Username string  `valid:"string|min:6|max:32"`           // Neds to be a string
+  Username string  `valid:"string|min:6|max:32"`           // Needs to be a string
   Password string  `valid:"string|between:6,32"`           // Same as min:6|max:32
-  Name     *string `valid:"nullable|pointer|string|min:6"` // 6 Chars long if present
+  Name     *string `valid:"nullable|pointer|string|min:6"` // 6 characters in length, if present
 }
 
 func main() {
@@ -53,6 +53,13 @@ func main() {
     Password: "This is a secret",
   }
 
+  /*
+    The result is a map[string][]string that looks like this, for example
+    map[string][]string{
+      "field name": {"rule message", "rule message"},
+      ...
+    }
+  */
   result, err := validation.
     NewValidator().
     // SetMessage can be used to set a custom message for a Rule using templates
@@ -68,9 +75,9 @@ func main() {
 
   if len(result) != 0 {
     fmt.Println(result)
+  } else {
+    fmt.Println("Everything fine")
   }
-
-  fmt.Println("Everything fine")
 }
 ```
 
