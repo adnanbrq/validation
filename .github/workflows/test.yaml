@@ -35,6 +35,7 @@ jobs:
           echo "COVERAGE=${COVERAGE:0:3}" >> $GITHUB_ENV
 
       - name: Update README with coverage badge
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           COVERAGE=${{ env.COVERAGE }}
           BADGE="![Coverage](https://img.shields.io/badge/Coverage-${COVERAGE}-brightgreen)"
