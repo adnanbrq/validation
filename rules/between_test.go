@@ -16,19 +16,19 @@ func TestBetween(t *testing.T) {
 	vStr := "Test"
 	assert.Equal(t, noErrs, Validate(&vStr, "1,4"))
 
-	// Unuseable
-	assert.Equal(t, noErrs, Validate("Hey", 1))
-	assert.Equal(t, []string{errBetweenUnuseable}, Validate("Hey", nil))
-	assert.Equal(t, []string{errBetweenUnuseable}, Validate(nil, "1,4"))
-	assert.Equal(t, []string{errBetweenUnuseable}, Validate(false, "1,4"))
-	assert.Equal(t, []string{errBetweenUnuseable}, Validate(true, "1,4"))
+	// unusable
+	assert.Equal(t, []string{errBetweenUnusable}, Validate("Hey", 1))
+	assert.Equal(t, []string{errBetweenUnusable}, Validate("Hey", nil))
+	assert.Equal(t, []string{errBetweenUnusable}, Validate(nil, "1,4"))
+	assert.Equal(t, []string{errBetweenUnusable}, Validate(false, "1,4"))
+	assert.Equal(t, []string{errBetweenUnusable}, Validate(true, "1,4"))
 
 	ptr = "Hello"
-	assert.Equal(t, []string{errBetweenUnuseable}, Validate(&ptr, "1,4"))
+	assert.Equal(t, []string{errBetweenUnusable}, Validate(&ptr, "1,4"))
 
 	// Invalid Options
-	assert.Equal(t, noErrs, Validate("Hey", ""))
-	assert.Equal(t, noErrs, Validate("Hey", "1"))
+	assert.Equal(t, []string{errBetweenUnusable}, Validate("Hey", ""))
+	assert.Equal(t, []string{errBetweenUnusable}, Validate("Hey", "1"))
 	assert.Equal(t, []string{errNumeric}, Validate("Hey", "1,"))
 	assert.Equal(t, []string{errNumeric}, Validate("Hey", "1,e"))
 	assert.Equal(t, []string{errNumeric}, Validate("Hey", "e,1"))

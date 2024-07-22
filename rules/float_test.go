@@ -12,8 +12,10 @@ func TestFloat(t *testing.T) {
 	Validate := rule.Validate
 
 	noFloat := []string{errNoFloat}
-	wrongSize := []string{errFloatWrongSize}
 	val := float32(212)
+	wrongSize := func(size string) []string {
+		return []string{errFloatWrongSize, size}
+	}
 
 	assert.NotEmpty(t, rule.Name())
 	assert.Equal(t, noErrs, Validate(&val, nil))
@@ -42,7 +44,7 @@ func TestFloat(t *testing.T) {
 
 	// 32 Bit
 	assert.Equal(t, noErrs, Validate(float32(1), "32"))
-	assert.Equal(t, wrongSize, Validate(float64(1), "32"))
+	assert.Equal(t, wrongSize("32"), Validate(float64(1), "32"))
 	assert.Equal(t, noFloat, Validate(int32(1), "32"))
 	assert.Equal(t, noFloat, Validate(int(1), "32"))
 	assert.Equal(t, noFloat, Validate(int8(12), "32"))
@@ -53,7 +55,7 @@ func TestFloat(t *testing.T) {
 	assert.Equal(t, noFloat, Validate(rand.Uint64(), "32"))
 
 	// 64 Bit
-	assert.Equal(t, wrongSize, Validate(float32(1), "64"))
+	assert.Equal(t, wrongSize("64"), Validate(float32(1), "64"))
 	assert.Equal(t, noErrs, Validate(float64(1), "64"))
 	assert.Equal(t, noFloat, Validate(int64(1), "64"))
 	assert.Equal(t, noFloat, Validate(int(1), "64"))

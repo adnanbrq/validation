@@ -28,6 +28,8 @@ type Validator struct {
 
 	// fieldMessages holds custom error messages for validation errors of specific fields.
 	fieldMessages map[string]string
+
+	failFast bool
 }
 
 // ErrInvalidInput is returned when the input to the Validate method is not a struct.
@@ -138,6 +140,10 @@ func (v *Validator) Validate(input interface{}) (map[string][]string, error) {
 		}
 
 		for _, rawRule := range fieldRules {
+			if _, ok := result[fieldName]; ok && v.failFast {
+				continue
+			}
+
 			if errs := v.applyRule(fieldName, rawRule, fieldValue); len(errs) > 0 {
 				result[fieldName] = append(result[fieldName], errs...)
 			}
@@ -155,51 +161,64 @@ func (v *Validator) Validate(input interface{}) (map[string][]string, error) {
 	return result, nil
 }
 
+// AppendRule can be used to store / add a custom rule. The rule needs to implement the rules.Rule interface
 func (v *Validator) AppendRule(rule rules.Rule) *Validator {
 	v.customRules[rule.Name()] = rule
 
 	return v
 }
 
-func (v *Validator) SetMessage(name, message string) *Validator {
-	v.messages[name] = message
+// SetMessage will override the default message for the given ruleErr like "no-string", etc.
+func (v *Validator) SetMessage(ruleErr, message string) *Validator {
+	v.messages[ruleErr] = message
 
 	return v
 }
 
+// SetMessage does the same as SetMessage but for specific field on the struct.
 func (v *Validator) SetFieldMessage(field, rule, message string) *Validator {
 	v.fieldMessages[fmt.Sprintf("%s.%s", field, rule)] = message
 
 	return v
 }
 
+// SetMessages can be used for translations and replaces the map of messages with the given map
 func (v *Validator) SetMessages(messages map[string]string) *Validator {
 	v.messages = messages
 
 	return v
 }
 
+// SetFailFast will set the failFast flag. Upcoming rules will be skipped per field if we have at least one error in the list
+// This essentially shrinks the length of error messages to a maximum of 1
+func (v *Validator) SetFailFast(failFast bool) *Validator {
+	v.failFast = failFast
+
+	return v
+}
+
+// NewValidator constructs a new Validator with predefined rules and default messages.
 func NewValidator() *Validator {
 	messages := map[string]string{
-		"between":           "must be between {{.O1}} and {{.O2}}",
-		"between-unuseable": "value is not useable",
-		"no-bool":           "is not a bool",
-		"default":           "",
-		"email":             "is not a email",
-		"json":              "is not a valid JSON Object",
-		"jwt":               "is not a valid JSON Web Token",
-		"min":               "must be greater than or equal to {{.O1}}",
-		"max":               "must be less than or equal to {{.O1}}",
-		"no-numeric":        "is not a number",
-		"no-pointer":        "is not a pointer",
-		"required":          "is required",
-		"no-string":         "is not a string",
-		"no-int":            "is not a integer",
-		"int-wrong-size":    "value has a wrong bit size",
-		"no-uint":           "is not a unsigned integer",
-		"uint-wrong-size":   "value has a wrong bit size",
-		"no-float":          "is not a float",
-		"float-wrong-size":  "value has a wrong bit size",
+		"between":          "must be between {{.O1}} and {{.O2}}",
+		"between-unusable": "value is not useable",
+		"no-bool":          "is not a bool",
+		"default":          "",
+		"email":            "is not a email",
+		"json":             "is not a valid JSON Object",
+		"jwt":              "is not a valid JSON Web Token",
+		"min":              "must be greater than or equal to {{.O1}}",
+		"max":              "must be less than or equal to {{.O1}}",
+		"no-numeric":       "is not a number",
+		"no-pointer":       "is not a pointer",
+		"required":         "is required",
+		"no-string":        "is not a string",
+		"no-int":           "is not a integer",
+		"int-wrong-size":   "value needs to be {{.O1}} bit",
+		"no-uint":          "is not a unsigned integer",
+		"uint-wrong-size":  "value needs to be {{.O1}} bit",
+		"no-float":         "is not a float",
+		"float-wrong-size": "value needs to be {{.O1}} bit",
 	}
 
 	predefinedRules := map[string]rules.Rule{}

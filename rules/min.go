@@ -66,8 +66,6 @@ func (r MinRule) Validate(value, options any) []string {
 		}
 	default:
 		{
-			size = 0
-			min = 0
 			pass = true
 		}
 	}

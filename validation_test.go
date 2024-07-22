@@ -36,6 +36,28 @@ func TestExample(t *testing.T) {
 	assert.Equal(t, map[string][]string{"username": {"must be less than or equal to 32"}}, res)
 }
 
+func TestFailFast(t *testing.T) {
+	validator := NewValidator()
+	validator.AppendRule(SnakeCaseRule{})
+	validator.SetMessage("not-snakecase", "needs to be snake case")
+	validator.SetFailFast(true)
+	dto := struct {
+		MultiRule string `valid:"min:6|snake_case"`
+	}{
+		MultiRule: "",
+	}
+
+	// multirule only contains the error for the min rule on failFast = true
+	res, err := validator.Validate(dto)
+	assert.Nil(t, err)
+	assert.Equal(t, map[string][]string{"multirule": {"must be greater than or equal to 6"}}, res)
+
+	// multirule contains all occured errors on failFast = false
+	res, err = validator.SetFailFast(false).Validate(dto)
+	assert.Nil(t, err)
+	assert.Equal(t, map[string][]string{"multirule": {"must be greater than or equal to 6", "needs to be snake case"}}, res)
+}
+
 func TestCustomFieldMessage(t *testing.T) {
 	name := "short"
 	signUpDTO := SignUpSchema{
@@ -65,7 +87,7 @@ func (SnakeCaseRule) Validate(value, options any) []string {
 		return []string{"not-snakecase"}
 	}
 
-	if regexp.MustCompile("[a-zA-Z]+(?:_[a-zA-Z]+)*").MatchString(value.(string)) {
+	if !regexp.MustCompile("^[a-zA-Z]+(?:_[a-zA-Z]+)*$").MatchString(value.(string)) {
 		return []string{"not-snakecase"}
 	}
 
@@ -77,7 +99,7 @@ func TestCustomRules(t *testing.T) {
 		ProfileName any `valid:"nullable|pointer|string|snake_case|min:4|max:32"`
 	}
 
-	invalidSnakeCase := "Helloworld"
+	invalidSnakeCase := "Hello World"
 	validSnakeCase := "Hello_World"
 	noString := 4
 	v := NewValidator().AppendRule(SnakeCaseRule{}).SetMessage("not-snakecase", "is not snake case formatted")
@@ -101,7 +123,7 @@ func TestCustomRules(t *testing.T) {
 
 	result, err = v.Validate(Input{ProfileName: validSnakeCase})
 	assert.Empty(t, err)
-	assert.Equal(t, map[string][]string{"profilename": {"is not a pointer", "is not snake case formatted"}}, result)
+	assert.Equal(t, map[string][]string{"profilename": {"is not a pointer"}}, result)
 
 	result, err = v.Validate(Input{ProfileName: &validSnakeCase})
 	assert.Empty(t, err)
