@@ -296,3 +296,21 @@ func TestInvalidInput(t *testing.T) {
 		assert.Empty(t, result, idx)
 	}
 }
+
+func TestInvalidMessage(t *testing.T) {
+	DTO := struct {
+		String string `valid:"min:6"`
+	}{
+		String: "Yo!",
+	}
+
+	res, err := NewValidator().SetMessage("min", "").Validate(DTO)
+	assert.Nil(t, err)
+	assert.Empty(t, res)
+
+	// Now testing that it works as expected when we have a valid message that can be parsed
+	res, err = NewValidator().SetMessage("min", "{{.Name}} must be {{.O1}} chars long").Validate(DTO)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, res)
+	assert.Equal(t, map[string][]string{"string": {"String must be 6 chars long"}}, res)
+}

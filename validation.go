@@ -29,6 +29,7 @@ type Validator struct {
 	// fieldMessages holds custom error messages for validation errors of specific fields.
 	fieldMessages map[string]string
 
+	// failFast is used to skip upcoming rules if there already is a error
 	failFast bool
 }
 
@@ -73,9 +74,10 @@ func (v *Validator) getErrorMessages(fieldName string, errs []string) (messages 
 	}
 
 	if ok && len(msg) > 0 {
-		t := template.Must(template.New("").Parse(msg))
-		if err := t.Execute(&buf, opts); err == nil {
-			messages = append(messages, buf.String())
+		if tpl := template.New(fieldName); tpl != nil {
+			if t, err := template.New(fieldName).Parse(msg); err == nil && t.Execute(&buf, opts) == nil {
+				messages = append(messages, buf.String())
+			}
 		}
 	}
 
@@ -200,25 +202,25 @@ func (v *Validator) SetFailFast(failFast bool) *Validator {
 // NewValidator constructs a new Validator with predefined rules and default messages.
 func NewValidator() *Validator {
 	messages := map[string]string{
-		"between":          "must be between {{.O1}} and {{.O2}}",
-		"between-unusable": "value is not useable",
-		"no-bool":          "is not a bool",
-		"default":          "",
-		"email":            "is not a email",
-		"json":             "is not a valid JSON Object",
-		"jwt":              "is not a valid JSON Web Token",
-		"min":              "must be greater than or equal to {{.O1}}",
-		"max":              "must be less than or equal to {{.O1}}",
-		"no-numeric":       "is not a number",
-		"no-pointer":       "is not a pointer",
-		"required":         "is required",
-		"no-string":        "is not a string",
-		"no-int":           "is not a integer",
-		"int-wrong-size":   "value needs to be {{.O1}} bit",
-		"no-uint":          "is not a unsigned integer",
-		"uint-wrong-size":  "value needs to be {{.O1}} bit",
-		"no-float":         "is not a float",
-		"float-wrong-size": "value needs to be {{.O1}} bit",
+		"between":               "must be between {{.O1}} and {{.O2}}",
+		"between-invalid-value": "the given value cannot be used for a range check",
+		"no-bool":               "is not a bool",
+		"default":               "",
+		"email":                 "is not a email",
+		"json":                  "is not a valid JSON Object",
+		"jwt":                   "is not a valid JSON Web Token",
+		"min":                   "must be greater than or equal to {{.O1}}",
+		"max":                   "must be less than or equal to {{.O1}}",
+		"no-numeric":            "is not a number",
+		"no-pointer":            "is not a pointer",
+		"required":              "is required",
+		"no-string":             "is not a string",
+		"no-int":                "is not a integer",
+		"int-wrong-size":        "value needs to be {{.O1}} bit",
+		"no-uint":               "is not a unsigned integer",
+		"uint-wrong-size":       "value needs to be {{.O1}} bit",
+		"no-float":              "is not a float",
+		"float-wrong-size":      "value needs to be {{.O1}} bit",
 	}
 
 	predefinedRules := map[string]rules.Rule{}
