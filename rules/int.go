@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/adnanbrq/validation/v2/helper"
@@ -15,37 +16,36 @@ var (
 )
 
 func (r IntRule) Name() string {
-	return "float"
+	return "int"
 }
 
 // Validate checks if the given value is either a float32 or float64
 func (IntRule) Validate(value, options any) []string {
-	if helper.IsPointer(value) {
-		return IntRule{}.Validate(helper.UnwrapPointer(value), options)
-	}
-
+	kind := reflect.ValueOf(value).Kind()
 	checkSize := func(size string) []string {
 		if options != nil && helper.IsString(options) {
 			if options.(string) == size {
 				return noErrs
 			}
 
-			return []string{errIntWrongSize}
+			return []string{errIntWrongSize, fmt.Sprint(options)}
 		}
 
 		return noErrs
 	}
 
-	switch reflect.ValueOf(value).Kind() {
-	case reflect.Int:
+	switch true {
+	case helper.IsPointer(value):
+		return IntRule{}.Validate(helper.UnwrapPointer(value), options)
+	case kind == reflect.Int:
 		return checkSize("")
-	case reflect.Int8:
+	case kind == reflect.Int8:
 		return checkSize("8")
-	case reflect.Int16:
+	case kind == reflect.Int16:
 		return checkSize("16")
-	case reflect.Int32:
+	case kind == reflect.Int32:
 		return checkSize("32")
-	case reflect.Int64:
+	case kind == reflect.Int64:
 		return checkSize("64")
 	default:
 		return []string{errNoInt}

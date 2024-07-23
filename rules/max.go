@@ -66,8 +66,6 @@ func (MaxRule) Validate(value, options any) []string {
 		}
 	default:
 		{
-			size = 0
-			max = 0
 			pass = true
 		}
 	}

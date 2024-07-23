@@ -9,29 +9,33 @@ import (
 
 func TestBetween(t *testing.T) {
 	Validate := BetweenRule{}.Validate
-	var ptr any
+	var ptr string
 
 	assert.NotEmpty(t, BetweenRule{}.Name())
 
 	vStr := "Test"
 	assert.Equal(t, noErrs, Validate(&vStr, "1,4"))
 
-	// Unuseable
 	assert.Equal(t, noErrs, Validate("Hey", 1))
-	assert.Equal(t, []string{errBetweenUnuseable}, Validate("Hey", nil))
-	assert.Equal(t, []string{errBetweenUnuseable}, Validate(nil, "1,4"))
-	assert.Equal(t, []string{errBetweenUnuseable}, Validate(false, "1,4"))
-	assert.Equal(t, []string{errBetweenUnuseable}, Validate(true, "1,4"))
+	assert.Equal(t, noErrs, Validate("Hey", nil))
+	assert.Equal(t, noErrs, Validate(map[string]string{}, nil))
+	assert.Equal(t, noErrs, Validate(nil, nil))
+	assert.Equal(t, noErrs, Validate(nil, "nil"))
+	assert.Equal(t, noErrs, Validate(nil, map[string]string{}))
+	assert.Equal(t, []string{errBetweenInvalidValue}, Validate(nil, "1,4"))
+	assert.Equal(t, []string{errBetweenInvalidValue}, Validate(nil, "1,4"))
+	assert.Equal(t, []string{errBetweenInvalidValue}, Validate(false, "1,4"))
+	assert.Equal(t, []string{errBetweenInvalidValue}, Validate(true, "1,4"))
 
 	ptr = "Hello"
-	assert.Equal(t, []string{errBetweenUnuseable}, Validate(&ptr, "1,4"))
+	assert.Equal(t, []string{errBetween, "1", "4"}, Validate(&ptr, "1,4"))
 
 	// Invalid Options
 	assert.Equal(t, noErrs, Validate("Hey", ""))
 	assert.Equal(t, noErrs, Validate("Hey", "1"))
-	assert.Equal(t, []string{errNumeric}, Validate("Hey", "1,"))
-	assert.Equal(t, []string{errNumeric}, Validate("Hey", "1,e"))
-	assert.Equal(t, []string{errNumeric}, Validate("Hey", "e,1"))
+	assert.Equal(t, noErrs, Validate("Hey", "1,"))
+	assert.Equal(t, noErrs, Validate("Hey", "1,e"))
+	assert.Equal(t, noErrs, Validate("Hey", "e,1"))
 
 	// String
 	assert.Equal(t, noErrs, Validate("Hey", "1,4"))

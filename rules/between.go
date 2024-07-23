@@ -12,8 +12,8 @@ import (
 type BetweenRule struct{}
 
 var (
-	errBetween          = "between"
-	errBetweenUnuseable = "between-unuseable"
+	errBetween             = "between"
+	errBetweenInvalidValue = "between-invalid-value"
 )
 
 func (r BetweenRule) Name() string {
@@ -25,33 +25,20 @@ func (r BetweenRule) Validate(value, options any) []string {
 	v := reflect.ValueOf(value)
 	o := reflect.ValueOf(options)
 
-	if helper.IsPointer(value) {
-		return BetweenRule{}.Validate(helper.UnwrapPointer(value), options)
-	}
-
-	if value == nil || options == nil {
-		return []string{errBetweenUnuseable}
-	}
-
 	if o.Kind() != reflect.String {
-		return noErrs
+		return noErrs // We cannot validate if we don't have a option for min and max
 	}
 
-	values := strings.Split(o.String(), ",")
-	if len(values) != 2 {
-		return noErrs
+	minmax := strings.Split(o.String(), ",")
+	if len(minmax) != 2 {
+		return noErrs // We cannot validate if we don't have enough options.
 	}
 
-	numeric := NumericRule{}
-	numericErrsMin := numeric.Validate(values[0], nil)
-	numericErrsMax := numeric.Validate(values[1], nil)
+	minErr := NumericRule{}.Validate(minmax[0], nil)
+	maxErr := NumericRule{}.Validate(minmax[1], nil)
 
-	if len(numericErrsMin) > 0 {
-		return numericErrsMin
-	}
-
-	if len(numericErrsMax) > 0 {
-		return numericErrsMax
+	if len(minErr)+len(maxErr) > 0 {
+		return noErrs // We cannot validate if the given options are not numeric
 	}
 
 	var (
@@ -61,37 +48,39 @@ func (r BetweenRule) Validate(value, options any) []string {
 	)
 
 	switch true {
+	case helper.IsPointer(value):
+		return BetweenRule{}.Validate(helper.UnwrapPointer(value), options)
 	case helper.IsString(value), helper.IsArray(value):
 		{
-			min = helper.ParseInt(values[0])
-			max = helper.ParseInt(values[1])
+			min = helper.ParseInt(minmax[0])
+			max = helper.ParseInt(minmax[1])
 
 			pass = int64(v.Len()) >= min.(int64) && int64(v.Len()) <= max.(int64)
 		}
 	case helper.IsInt(value):
 		{
-			min = helper.ParseInt(values[0])
-			max = helper.ParseInt(values[1])
+			min = helper.ParseInt(minmax[0])
+			max = helper.ParseInt(minmax[1])
 
-			pass = v.CanInt() && v.Int() >= min.(int64) && v.Int() <= max.(int64)
+			pass = v.Int() >= min.(int64) && v.Int() <= max.(int64)
 		}
 	case helper.IsUint(value):
 		{
-			min = helper.ParseUint(values[0])
-			max = helper.ParseUint(values[1])
+			min = helper.ParseUint(minmax[0])
+			max = helper.ParseUint(minmax[1])
 
-			pass = v.CanUint() && v.Uint() >= min.(uint64) && v.Uint() <= max.(uint64)
+			pass = v.Uint() >= min.(uint64) && v.Uint() <= max.(uint64)
 		}
 	case helper.IsFloat(value):
 		{
-			min = helper.ParseFloat(values[0])
-			max = helper.ParseFloat(values[1])
+			min = helper.ParseFloat(minmax[0])
+			max = helper.ParseFloat(minmax[1])
 
-			pass = v.CanFloat() && v.Float() >= min.(float64) && v.Float() <= max.(float64)
+			pass = v.Float() >= min.(float64) && v.Float() <= max.(float64)
 		}
 	default:
 		{
-			return []string{errBetweenUnuseable}
+			return []string{errBetweenInvalidValue}
 		}
 	}
 
