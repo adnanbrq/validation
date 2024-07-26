@@ -32,7 +32,7 @@ jobs:
         id: extract_coverage
         run: |
           COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}')
-          echo "COVERAGE=${COVERAGE:0:3}" >> $GITHUB_ENV
+          echo "COVERAGE=${COVERAGE%%.*}" >> $GITHUB_ENV
 
       - name: Update README with coverage badge
         if: ${{ github.event_name == 'pull_request' }}

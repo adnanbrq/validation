@@ -220,7 +220,21 @@ func NewValidator() *Validator {
 		"no-uint":               "is not a unsigned integer",
 		"uint-wrong-size":       "value needs to be {{.O1}} bit",
 		"no-float":              "is not a float",
+		"no-time":               "is not a valid date",
+		"time-not-today":        "has to be today",
+		"time-not-yesterday":    "has to be yesterday",
+		"time-not-in-future":    "needs to be in the future",
+		"time-not-in-past":      "needs to be in the past",
 		"float-wrong-size":      "value needs to be {{.O1}} bit",
+		"not-same-day":          "Day is not {{.O1}}",
+		"not-same-month":        "Month is not {{.O1}}",
+		"not-same-year":         "Year is not {{.O1}}",
+		"min-day":               "must be {{.O1}} or later",
+		"max-day":               "must be before or {{.O1}}",
+		"min-month":             "must be {{.O1}} or later",
+		"max-month":             "must be before or {{.O1}}",
+		"min-year":              "must be {{.O1}} or later",
+		"max-year":              "must be before or {{.O1}}",
 	}
 
 	predefinedRules := map[string]rules.Rule{}
