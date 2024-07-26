@@ -52,7 +52,7 @@ func TestFailFast(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, map[string][]string{"multirule": {"must be greater than or equal to 6"}}, res)
 
-	// multirule contains all occured errors on failFast = false
+	// multirule contains all occurred errors on failFast = false
 	res, err = validator.SetFailFast(false).Validate(dto)
 	assert.Nil(t, err)
 	assert.Equal(t, map[string][]string{"multirule": {"must be greater than or equal to 6", "needs to be snake case"}}, res)
