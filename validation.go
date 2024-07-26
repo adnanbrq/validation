@@ -229,12 +229,6 @@ func NewValidator() *Validator {
 		"not-same-day":          "Day is not {{.O1}}",
 		"not-same-month":        "Month is not {{.O1}}",
 		"not-same-year":         "Year is not {{.O1}}",
-		"min-day":               "must be {{.O1}} or later",
-		"max-day":               "must be before or {{.O1}}",
-		"min-month":             "must be {{.O1}} or later",
-		"max-month":             "must be before or {{.O1}}",
-		"min-year":              "must be {{.O1}} or later",
-		"max-year":              "must be before or {{.O1}}",
 	}
 
 	predefinedRules := map[string]rules.Rule{}
@@ -254,6 +248,8 @@ func NewValidator() *Validator {
 		rules.IntRule{},
 		rules.UintRule{},
 		rules.FloatRule{},
+		rules.TimeRule{},
+		rules.DateRule{},
 	}
 
 	for _, rule := range ruleBucket {
