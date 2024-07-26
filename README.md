@@ -1,4 +1,4 @@
-![Coverage](https://img.shields.io/badge/Coverage-98-brightgreen) [![Go Reference](https://pkg.go.dev/badge/github.com/adnanbrq/validation/v2.svg)](https://pkg.go.dev/github.com/adnanbrq/validation/v2) [![Go Report Card](https://goreportcard.com/badge/github.com/adnanbrq/validation/v2)](https://goreportcard.com/report/github.com/adnanbrq/validation/v2)
+![Coverage](https://img.shields.io/badge/Coverage-100-brightgreen) [![Go Reference](https://pkg.go.dev/badge/github.com/adnanbrq/validation/v2.svg)](https://pkg.go.dev/github.com/adnanbrq/validation/v2) [![Go Report Card](https://goreportcard.com/badge/github.com/adnanbrq/validation/v2)](https://goreportcard.com/report/github.com/adnanbrq/validation/v2)
 
 # Go Validation
 
