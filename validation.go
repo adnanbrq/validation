@@ -127,10 +127,18 @@ func (v *Validator) Validate(input interface{}) (map[string][]string, error) {
 	value := reflect.ValueOf(input)
 
 	for i := 0; i < value.NumField(); i++ {
+		var fieldValue any = nil
 		fieldName := strings.ToLower(value.Type().Field(i).Name)
-		fieldValue := value.Field(i).Interface()
 		fieldTag := value.Type().Field(i).Tag.Get("valid")
 		fieldRules := strings.Split(fieldTag, "|")
+
+		if value.Field(i).Kind() == reflect.Struct && value.Field(i).Type().Name() == "Time" {
+			fieldValue = value.Field(i)
+		}
+
+		if value.Field(i).CanInterface() {
+			fieldValue = value.Field(i).Interface()
+		}
 
 		if v.isFieldNullable(fieldTag, fieldValue) {
 			continue
