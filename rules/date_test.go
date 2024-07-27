@@ -41,8 +41,8 @@ func TestDate(t *testing.T) {
 
 	// Day
 	assert.Equal(t, noErrs, rule.Validate(input, fmt.Sprintf("D%d", input.Day())))
-	assert.Equal(t, noErrs, rule.Validate(input, "M01"))                        // Only valid because input on L:14 is constructed with 1 for the Day
-	assert.Equal(t, noErrs, rule.Validate(input, "M1"))                         // Leading zero is possible and ^
+	assert.Equal(t, noErrs, rule.Validate(input, "D01"))                        // Only valid because input on L:14 is constructed with 1 for the Day
+	assert.Equal(t, noErrs, rule.Validate(input, "D01"))                        // Leading zero is possible and ^
 	assert.Equal(t, []string{errNotSameDay, "99"}, rule.Validate(input, "D99")) // D99 is a valid input but will be treated as a possible date and thus result in a error
 	assert.Equal(t, noErrs, rule.Validate(input, nil))                          // invalid options will not raise any error as the input cannot be validated  It's the Developer who did something wrong here
 	assert.Equal(t, noErrs, rule.Validate(input, ""))                           // ^
@@ -54,8 +54,8 @@ func TestDate(t *testing.T) {
 
 	// Month
 	assert.Equal(t, noErrs, rule.Validate(input, fmt.Sprintf("M%d", input.Month())))
-	assert.Equal(t, noErrs, rule.Validate(input, "M01"))                          // Only valid because input on L:14 is constructed with 1 for the Month
-	assert.Equal(t, noErrs, rule.Validate(input, "M1"))                           // Leading zero is possible and ^
+	assert.Equal(t, noErrs, rule.Validate(input, "M1"))                           // Only valid because input on L:14 is constructed with 1 for the Month
+	assert.Equal(t, noErrs, rule.Validate(input, "M01"))                          // Leading zero is possible and ^
 	assert.Equal(t, []string{errNotSameMonth, "99"}, rule.Validate(input, "M99")) // N99 is a valid input but will be treated as a possible month and thus result in a error
 	assert.Equal(t, noErrs, rule.Validate(input, nil))                            // invalid options will not raise any error as the input cannot be validated  It's the Developer who did something wrong here
 	assert.Equal(t, noErrs, rule.Validate(input, ""))                             // ^
