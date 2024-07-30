@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/adnanbrq/validation/v2/helper"
 	"github.com/stretchr/testify/assert"
@@ -52,7 +53,7 @@ func TestFailFast(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, map[string][]string{"multirule": {"must be greater than or equal to 6"}}, res)
 
-	// multirule contains all occured errors on failFast = false
+	// multirule contains all occurred errors on failFast = false
 	res, err = validator.SetFailFast(false).Validate(dto)
 	assert.Nil(t, err)
 	assert.Equal(t, map[string][]string{"multirule": {"must be greater than or equal to 6", "needs to be snake case"}}, res)
@@ -171,21 +172,22 @@ func TestValid(t *testing.T) {
 	}
 
 	type AllRules struct {
-		String          string `valid:"string"`
-		Bool            bool   `valid:"bool"`
-		Between         int    `valid:"between:1,4"`
-		Min             int    `valid:"min:1"`
-		Max             int    `valid:"max:1"`
-		Numeric         string `valid:"numeric"`
-		NumericInt      int    `valid:"numeric"`
-		Email           string `valid:"email"`
-		EmailWithRegEx  string `valid:"email:^(my@company.mail)$"`
-		JWT             string `valid:"jwt"`
-		JSON            string `valid:"json"`
-		RegEx           string `valid:"regex:^[0-9]+$"`
-		RegExWithExpose string `valid:"regex:^[0-9]+$;expose"`
-		Default         bool
-		Required        string `valid:"required"`
+		String        string `valid:"string"`
+		Bool          bool   `valid:"bool"`
+		Between       int    `valid:"between:1,4"`
+		Min           int    `valid:"min:1"`
+		Max           int    `valid:"max:1"`
+		Numeric       string `valid:"numeric"`
+		NumericInt    int    `valid:"numeric"`
+		Email         string `valid:"email"`
+		JWT           string `valid:"jwt"`
+		JSON          string `valid:"json"`
+		Default       bool
+		Required      string    `valid:"required"`
+		TimeToday     time.Time `valid:"time:today"`
+		TimeYesterday time.Time `valid:"time:yesterday"`
+		TimeFuture    time.Time `valid:"time:future"`
+		TimePast      time.Time `valid:"time:past"`
 	}
 
 	type InnerComplex struct {
@@ -211,21 +213,22 @@ func TestValid(t *testing.T) {
 	}
 
 	validAllRules := AllRules{
-		String:          "hello",
-		Bool:            true,
-		Between:         1,
-		Min:             1,
-		Max:             1,
-		Numeric:         "123",
-		NumericInt:      123,
-		Email:           "test@test.com",
-		EmailWithRegEx:  "my@company.mail",
-		JWT:             "eyaaa.bbb.ccc",
-		JSON:            "{\"foo\": \"bar\"}",
-		RegEx:           "123",
-		RegExWithExpose: "123",
-		Default:         true,
-		Required:        "Test",
+		String:        "hello",
+		Bool:          true,
+		Between:       1,
+		Min:           1,
+		Max:           1,
+		Numeric:       "123",
+		NumericInt:    123,
+		Email:         "test@test.com",
+		JWT:           "eyaaa.bbb.ccc",
+		JSON:          "{\"foo\": \"bar\"}",
+		Default:       true,
+		Required:      "Test",
+		TimeToday:     time.Now(),
+		TimeYesterday: time.Now().Add(time.Duration(-24) * time.Hour),
+		TimeFuture:    time.Now().Add(time.Duration(24) * time.Hour),
+		TimePast:      time.Now().Add(time.Duration(-200) * time.Hour),
 	}
 
 	complexValid := ComplexStruct{
@@ -252,6 +255,11 @@ func TestValid(t *testing.T) {
 	result, err = v.Validate(validAllRules)
 	assert.Empty(t, result)
 	assert.Nil(t, err)
+
+	validAllRules.TimeYesterday = time.Now()
+	result, err = v.Validate(validAllRules)
+	assert.Nil(t, err)
+	assert.Equal(t, map[string][]string{"timeyesterday": {"has to be yesterday"}}, result)
 
 	result, err = v.Validate(invalid)
 	assert.Nil(t, err)

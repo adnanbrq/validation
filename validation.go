@@ -127,10 +127,18 @@ func (v *Validator) Validate(input interface{}) (map[string][]string, error) {
 	value := reflect.ValueOf(input)
 
 	for i := 0; i < value.NumField(); i++ {
+		var fieldValue any = nil
 		fieldName := strings.ToLower(value.Type().Field(i).Name)
-		fieldValue := value.Field(i).Interface()
 		fieldTag := value.Type().Field(i).Tag.Get("valid")
 		fieldRules := strings.Split(fieldTag, "|")
+
+		if value.Field(i).Kind() == reflect.Struct && value.Field(i).Type().Name() == "Time" {
+			fieldValue = value.Field(i)
+		}
+
+		if value.Field(i).CanInterface() {
+			fieldValue = value.Field(i).Interface()
+		}
 
 		if v.isFieldNullable(fieldTag, fieldValue) {
 			continue
@@ -220,7 +228,15 @@ func NewValidator() *Validator {
 		"no-uint":               "is not a unsigned integer",
 		"uint-wrong-size":       "value needs to be {{.O1}} bit",
 		"no-float":              "is not a float",
+		"no-time":               "is not a valid date",
+		"time-not-today":        "has to be today",
+		"time-not-yesterday":    "has to be yesterday",
+		"time-not-in-future":    "needs to be in the future",
+		"time-not-in-past":      "needs to be in the past",
 		"float-wrong-size":      "value needs to be {{.O1}} bit",
+		"not-same-day":          "Day is not {{.O1}}",
+		"not-same-month":        "Month is not {{.O1}}",
+		"not-same-year":         "Year is not {{.O1}}",
 	}
 
 	predefinedRules := map[string]rules.Rule{}
@@ -240,6 +256,8 @@ func NewValidator() *Validator {
 		rules.IntRule{},
 		rules.UintRule{},
 		rules.FloatRule{},
+		rules.TimeRule{},
+		rules.DateRule{},
 	}
 
 	for _, rule := range ruleBucket {
