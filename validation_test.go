@@ -95,6 +95,22 @@ func (SnakeCaseRule) Validate(value, options any) []string {
 	return []string{}
 }
 
+func TestCustomRuleWithSpecificMessageOnly(t *testing.T) {
+	type DTO struct {
+		Message string `valid:"snake_case"`
+	}
+
+	v := NewValidator().AppendRule(SnakeCaseRule{}).SetFieldMessage("message", "not-snakecase", "Woops")
+	msgs, err := v.Validate(DTO{""})
+	assert.Nil(t, err)
+	assert.Equal(t, map[string][]string{"message": {"Woops"}}, msgs)
+
+	v = NewValidator().AppendRule(SnakeCaseRule{}).SetMessage("not-snakecase", "Woops")
+	msgs, err = v.Validate(DTO{""})
+	assert.Nil(t, err)
+	assert.Equal(t, map[string][]string{"message": {"Woops"}}, msgs)
+}
+
 func TestCustomRules(t *testing.T) {
 	type Input struct {
 		ProfileName any `valid:"nullable|pointer|string|snake_case|min:4|max:32"`

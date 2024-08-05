@@ -71,6 +71,7 @@ func (v *Validator) getErrorMessages(fieldName string, errs []string) (messages 
 
 	if fieldMsg, hasFieldMsg := v.fieldMessages[fmt.Sprintf("%s.%s", fieldName, errs[0])]; hasFieldMsg {
 		msg = fieldMsg
+		ok = true
 	}
 
 	if ok && len(msg) > 0 {
